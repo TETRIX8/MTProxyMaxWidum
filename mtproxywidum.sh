@@ -1,7 +1,7 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
 #  MTProxyWidum — The Ultimate Telegram Proxy Manager
-#  Copyright (c) 2026 SamNet Technologies
+#  Created by TETRIX8
 #  https://github.com/TETRIX8/MTProxyMaxWidum
 #
 #  Engine: telemt 3.x (Rust+Tokio)
@@ -346,19 +346,11 @@ clear_screen() {
 # Show the big ASCII banner
 show_banner() {
     echo -e "${BRIGHT_CYAN}"
-    cat << 'BANNER_ART'
-
-    ███╗   ███╗████████╗██████╗ ██████╗  ██████╗
-    ████╗ ████║╚══██╔══╝██╔══██╗██╔══██╗██╔═══██╗
-    ██╔████╔██║   ██║   ██████╔╝██████╔╝██║   ██║
-    ██║╚██╔╝██║   ██║   ██╔═══╝ ██╔══██╗██║   ██║
-    ██║ ╚═╝ ██║   ██║   ██║     ██║  ██║╚██████╔╝
-    ╚═╝     ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝ ╚═════╝
-BANNER_ART
     cat << BANNER
-    ╔═════════════════ M A X ══════════════════════╗
-    ║  The Ultimate Telegram Proxy Manager v${VERSION}$(printf '%*s' $((7 - ${#VERSION})) '')║
-    ║             SamNet Technologies              ║
+    ╔══════════════════════════════════════════════╗
+    ║                 WIDUMPROXY                   ║
+    ║        Telegram Proxy Manager v${VERSION}        ║
+    ║              Created by TETRIX8              ║
     ╚══════════════════════════════════════════════╝
 
 BANNER
@@ -12811,8 +12803,8 @@ replication_promote() {
 run_installer() {
     show_banner
 
-    echo -e "  ${BRIGHT_GREEN}Welcome to MTProxyWidum — the ultimate Telegram proxy manager${NC}"
-    echo -e "  ${DIM}by SamNet Technologies${NC}"
+    echo -e "  ${BRIGHT_GREEN}WIDUMPROXY — Telegram proxy manager${NC}"
+    echo -e "  ${DIM}Created by TETRIX8${NC}"
     echo ""
 
     check_root "$@"
@@ -13488,7 +13480,7 @@ list_backups() {
 show_cli_help() {
     echo ""
     echo -e "  ${BRIGHT_CYAN}${BOLD}MTProxyWidum${NC} ${DIM}v${VERSION}${NC} — The Ultimate Telegram Proxy Manager"
-    echo -e "  ${DIM}by SamNet Technologies${NC}"
+    echo -e "  ${DIM}Created by TETRIX8${NC}"
     echo ""
     echo -e "  ${BOLD}Usage:${NC} mtproxywidum <command> [options]"
     echo ""
@@ -15708,7 +15700,7 @@ cli_main() {
         version)
             echo -e "  ${BOLD}MTProxyWidum${NC} v${VERSION}"
             echo -e "  ${DIM}Engine: telemt v$(get_telemt_version) (Rust)${NC}"
-            echo -e "  ${DIM}SamNet Technologies${NC}"
+            echo -e "  ${DIM}TETRIX8${NC}"
             ;;
 
         help|--help|-h)
@@ -16489,7 +16481,7 @@ show_main_menu() {
         draw_box_line "  ${BRIGHT_CYAN}[0]${NC}  Exit" "$w"
         draw_box_empty "$w"
         draw_box_sep "$w"
-        draw_box_center "${DIM}mtproxywidum v${VERSION} | SamNet Technologies${NC}" "$w"
+        draw_box_center "${DIM}mtproxywidum v${VERSION} | TETRIX8${NC}" "$w"
         draw_box_bottom "$w"
 
         local choice
@@ -18437,8 +18429,8 @@ show_about() {
         draw_box_center "${BRIGHT_GREEN}${BOLD}ABOUT MTPROXYWIDUM${NC}" "$w"
         draw_box_sep "$w"
         draw_box_empty "$w"
-        draw_box_line "  ${BOLD}Created by:${NC}  Sam" "$w"
-        draw_box_line "  ${BOLD}Publisher:${NC}   SamNet Technologies" "$w"
+        draw_box_line "  ${BOLD}Created by:${NC}  TETRIX8" "$w"
+        draw_box_line "  ${BOLD}Publisher:${NC}   TETRIX8" "$w"
         draw_box_line "  ${BOLD}Version:${NC}     v${VERSION}" "$w"
         draw_box_line "  ${BOLD}Engine:${NC}      telemt v$(get_telemt_version) (Rust)" "$w"
         draw_box_line "  ${BOLD}License:${NC}     MIT" "$w"
@@ -18461,7 +18453,7 @@ show_about() {
         draw_box_line "  ${GREEN}${SYM_CHECK}${NC} Health monitoring & auto-recovery" "$w"
         draw_box_empty "$w"
         draw_box_sep "$w"
-        draw_box_center "${DIM}Made with care by Sam — SamNet Technologies${NC}" "$w"
+        draw_box_center "${DIM}Created by TETRIX8${NC}" "$w"
         draw_box_bottom "$w"
         echo ""
         echo -e "  ${DIM}[1]${NC} Check for updates"

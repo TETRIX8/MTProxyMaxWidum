@@ -1,5 +1,5 @@
 #!/bin/bash
-# MTProxyWidum Quick Installer — SamNet Technologies
+# WIDUMPROXY Quick Installer — Created by TETRIX8
 # Usage: curl -sL https://raw.githubusercontent.com/TETRIX8/MTProxyMaxWidum/main/install.sh | sudo bash
 set -e
 SCRIPT_URL="https://raw.githubusercontent.com/TETRIX8/MTProxyMaxWidum/main/mtproxywidum.sh"
