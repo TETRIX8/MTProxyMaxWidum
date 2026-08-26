@@ -1521,7 +1521,7 @@ Built on top of **telemt** — a high-performance MTProto proxy engine written i
 
 ## 📖 Documentation & Guides
 
-For step-by-step tutorials with screenshots and detailed explanations, visit our guides on SamNet:
+For step-by-step tutorials with screenshots and detailed explanations, visit our guides:
 
 - **[Complete MTProto Proxy Setup Guide](https://www.samnet.dev/learn/networking/mtproto-proxy-telegram/)** — Full walkthrough: install, multi-user management, FakeTLS, Telegram bot, proxy chaining, geo-blocking, replication, and ad-tag monetization.
 - **[3X-UI Panel Setup Guide](https://www.samnet.dev/learn/networking/xui-setup/)** — If you need VLESS/VMess/Reality/Trojan protocols alongside MTProto.
