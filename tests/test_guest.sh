@@ -12,7 +12,7 @@ TEST_TMPDIR=$(mktemp -d)
 INSTALL_DIR="$TEST_TMPDIR/install"
 mkdir -p "$INSTALL_DIR"
 
-MTPROXYMAX_SOURCE_ONLY=true source "$(dirname "$0")/../mtproxymax.sh"
+MTPROXYWIDUM_SOURCE_ONLY=true source "$(dirname "$0")/../mtproxywidum.sh"
 set +e
 trap 'rm -rf "$TEST_TMPDIR"' EXIT
 

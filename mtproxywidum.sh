@@ -1,8 +1,8 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-#  MTProxyMax — The Ultimate Telegram Proxy Manager
+#  MTProxyWidum — The Ultimate Telegram Proxy Manager
 #  Copyright (c) 2026 SamNet Technologies
-#  https://github.com/SamNet-dev/MTProxyMax
+#  https://github.com/TETRIX8/MTProxyMaxWidum
 #
 #  Engine: telemt 3.x (Rust+Tokio)
 #  License: MIT
@@ -12,8 +12,8 @@ export LC_NUMERIC=C
 
 # ── Section 1: Initialization ────────────────────────────────
 VERSION="1.4.0-LTS"
-SCRIPT_NAME="mtproxymax"
-INSTALL_DIR="${INSTALL_DIR:-/opt/mtproxymax}"
+SCRIPT_NAME="mtproxywidum"
+INSTALL_DIR="${INSTALL_DIR:-/opt/mtproxywidum}"
 CONFIG_DIR="${CONFIG_DIR:-${INSTALL_DIR}/mtproxy}"
 SETTINGS_FILE="${SETTINGS_FILE:-${INSTALL_DIR}/settings.conf}"
 SECRETS_FILE="${SECRETS_FILE:-${INSTALL_DIR}/secrets.conf}"
@@ -36,16 +36,16 @@ SSL_CONF_FILE="${SSL_CONF_FILE:-${INSTALL_DIR}/ssl.conf}"
 SSL_DIR="${SSL_DIR:-${INSTALL_DIR}/ssl}"
 CLOUD_BACKUP_FILE="${CLOUD_BACKUP_FILE:-${INSTALL_DIR}/cloud_backup.conf}"
 SCANNER_SHIELD_SET="mtp_scanners"
-CONTAINER_NAME="mtproxymax"
-DOCKER_IMAGE_BASE="mtproxymax-telemt"
-TELEMT_MIN_VERSION="3.4.25"
-TELEMT_COMMIT="51e58b5"  # Pinned: v3.4.25 — Handshake failure stage accounting, In-Runtime Reload
-GITHUB_REPO="SamNet-dev/MTProxyMax"
-REGISTRY_IMAGE="ghcr.io/samnet-dev/mtproxymax-telemt"
+CONTAINER_NAME="mtproxywidum"
+DOCKER_IMAGE_BASE="mtproxywidum-telemt"
+TELEMT_MIN_VERSION="3.5.2"
+TELEMT_COMMIT="b6b9a18"  # Pinned: v3.5.2 — Fix Windows WEB carrier empty-cookie compatibility
+GITHUB_REPO="TETRIX8/MTProxyMaxWidum"
+REGISTRY_IMAGE="ghcr.io/samnet-dev/mtproxywidum-telemt"
 
 # Bash version check
 if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
-    echo "ERROR: MTProxyMax requires bash 4.2+. Current: ${BASH_VERSION:-unknown}" >&2
+    echo "ERROR: MTProxyWidum requires bash 4.2+. Current: ${BASH_VERSION:-unknown}" >&2
     exit 1
 fi
 
@@ -55,14 +55,14 @@ _cleanup() {
     for f in "${_TEMP_FILES[@]}"; do
         rm -f "$f" 2>/dev/null
     done
-    rm -f /tmp/.mtproxymax-tg.* 2>/dev/null || true
+    rm -f /tmp/.mtproxywidum-tg.* 2>/dev/null || true
 }
 trap _cleanup EXIT
 
 _mktemp() {
     local dir="${1:-${TMPDIR:-/tmp}}"
     local tmp
-    tmp=$(mktemp "${dir}/.mtproxymax.XXXXXX") || return 1
+    tmp=$(mktemp "${dir}/.mtproxywidum.XXXXXX") || return 1
     chmod 600 "$tmp"
     _TEMP_FILES+=("$tmp")
     echo "$tmp"
@@ -143,7 +143,7 @@ TELEGRAM_BOT_TOKEN=""
 TELEGRAM_CHAT_ID=""
 TELEGRAM_INTERVAL=6
 TELEGRAM_ALERTS_ENABLED="true"
-TELEGRAM_SERVER_LABEL="MTProxyMax"
+TELEGRAM_SERVER_LABEL="MTProxyWidum"
 AUTO_UPDATE_ENABLED="true"
 
 # Anti-DPI & Stealth Defenses
@@ -186,10 +186,10 @@ REPLICATION_SYNC_INTERVAL=60
 REPLICATION_SSH_PORT=22
 REPLICATION_SSH_USER="root"
 REPLICATION_DELETE_EXTRA="true"
-REPLICATION_SSH_KEY_PATH="/opt/mtproxymax/.ssh/id_ed25519"
-REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,settings.conf,replication.conf,mtproxymax-telegram.sh,mtproxymax-sync.sh"
+REPLICATION_SSH_KEY_PATH="/opt/mtproxywidum/.ssh/id_ed25519"
+REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,settings.conf,replication.conf,mtproxywidum-telegram.sh,mtproxywidum-sync.sh"
 REPLICATION_RESTART_ON_CHANGE="true"
-REPLICATION_LOG="/var/log/mtproxymax-sync.log"
+REPLICATION_LOG="/var/log/mtproxywidum-sync.log"
 
 # Terminal width
 TERM_WIDTH=$(tput cols 2>/dev/null || echo 60)
@@ -339,7 +339,7 @@ press_any_key() {
 # Clear screen and show mini header
 clear_screen() {
     clear 2>/dev/null || printf '\033[2J\033[H'
-    echo -e "${BRIGHT_CYAN}${BOLD}  MTProxyMax${NC} ${DIM}v${VERSION}${NC}"
+    echo -e "${BRIGHT_CYAN}${BOLD}  MTProxyWidum${NC} ${DIM}v${VERSION}${NC}"
     echo -e "  ${DIM}$(_repeat '─' 30)${NC}"
 }
 
@@ -470,7 +470,7 @@ get_public_ip() {
 }
 
 get_export_dir() {
-    local edir="${INSTALL_DIR:-/opt/mtproxymax}/exports"
+    local edir="${INSTALL_DIR:-/opt/mtproxywidum}/exports"
     mkdir -p "$edir" 2>/dev/null || true
     chmod 700 "$edir" 2>/dev/null || true
     echo "$edir"
@@ -497,7 +497,7 @@ is_port_available() {
 # Check if running as root
 check_root() {
     if [ "$(id -u)" -ne 0 ]; then
-        log_error "MTProxyMax must be run as root"
+        log_error "MTProxyWidum must be run as root"
         echo -e "  ${DIM}Try: sudo $0 $*${NC}"
         exit 1
     fi
@@ -649,9 +649,9 @@ save_settings() {
     BLOCKLIST_COUNTRIES="${BLOCKLIST_COUNTRIES//\'/}"
 
     cat > "$tmp" << SETTINGS_EOF
-# MTProxyMax Settings — v${VERSION}
+# MTProxyWidum Settings — v${VERSION}
 # Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-# DO NOT EDIT MANUALLY — use 'mtproxymax' to change settings
+# DO NOT EDIT MANUALLY — use 'mtproxywidum' to change settings
 
 # Proxy Configuration
 PROXY_PORT='${PROXY_PORT}'
@@ -798,6 +798,7 @@ load_settings() {
     [[ "$FAKE_CERT_LEN" =~ ^[0-9]+$ ]] && [ "$FAKE_CERT_LEN" -ge 256 ] || FAKE_CERT_LEN=2048
     [[ "$PROXY_CONCURRENCY" =~ ^[0-9]+$ ]] || PROXY_CONCURRENCY=8192
     [[ "$PROXY_PROTOCOL" == "true" ]] || PROXY_PROTOCOL="false"
+    case "${CLIENT_MSS:-}" in tspu) ;; *) CLIENT_MSS="" ;; esac
     [[ "$GEOBLOCK_MODE" == "whitelist" ]] || GEOBLOCK_MODE="blacklist"
     [[ "$UNKNOWN_SNI_ACTION" == "drop" ]] || UNKNOWN_SNI_ACTION="mask"
     [[ "$TELEGRAM_INTERVAL" =~ ^[0-9]+$ ]] || TELEGRAM_INTERVAL=6
@@ -829,9 +830,9 @@ save_secrets() {
     local tmp
     tmp=$(_mktemp) || { log_error "Cannot create temp file"; return 1; }
 
-    echo "# MTProxyMax Secrets Database — v${VERSION}" > "$tmp"
+    echo "# MTProxyWidum Secrets Database — v${VERSION}" > "$tmp"
     echo "# Format: LABEL|SECRET|CREATED_TS|ENABLED|MAX_CONNS|MAX_IPS|QUOTA_BYTES|EXPIRES|NOTES|AD_TAG" >> "$tmp"
-    echo "# DO NOT EDIT MANUALLY — use 'mtproxymax secret' commands" >> "$tmp"
+    echo "# DO NOT EDIT MANUALLY — use 'mtproxywidum secret' commands" >> "$tmp"
 
     if [ ${#SECRETS_LABELS[@]} -gt 0 ]; then
         local i
@@ -927,9 +928,9 @@ save_upstreams() {
     local tmp
     tmp=$(_mktemp) || { log_error "Cannot create temp file"; return 1; }
 
-    echo "# MTProxyMax Upstreams Database — v${VERSION}" > "$tmp"
+    echo "# MTProxyWidum Upstreams Database — v${VERSION}" > "$tmp"
     echo "# Format: NAME|TYPE|ADDR|USER|PASS|WEIGHT|IFACE|ENABLED" >> "$tmp"
-    echo "# DO NOT EDIT MANUALLY — use 'mtproxymax upstream' commands" >> "$tmp"
+    echo "# DO NOT EDIT MANUALLY — use 'mtproxywidum upstream' commands" >> "$tmp"
 
     if [ ${#UPSTREAM_NAMES[@]} -gt 0 ]; then
         local i
@@ -1121,7 +1122,7 @@ build_telemt_image() {
     log_info "Includes: Prometheus metrics, ME perf fixes, critical ME bug fixes"
 
     local build_dir
-    build_dir=$(mktemp -d "${TMPDIR:-/tmp}/mtproxymax-build.XXXXXX")
+    build_dir=$(mktemp -d "${TMPDIR:-/tmp}/mtproxywidum-build.XXXXXX")
     _TEMP_FILES+=("$build_dir")
 
     cat > "${build_dir}/Dockerfile" << 'DOCKERFILE_EOF'
@@ -1269,7 +1270,7 @@ generate_telemt_config() {
     tmp=$(_mktemp "$CONFIG_DIR") || { log_error "Cannot create temp file for config"; return 1; }
 
     cat > "$tmp" << TOML_EOF
-# MTProxyMax — telemt configuration
+# MTProxyWidum — telemt configuration
 # Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
 [general]
@@ -1320,7 +1321,7 @@ $([ "$mask_enabled" = "true" ] && [ -n "$mask_host" ] && echo "mask_host = \"${m
 $([ -n "${MASKING_RELAY_MAX_BYTES:-}" ] && echo "mask_relay_max_bytes = ${MASKING_RELAY_MAX_BYTES}")
 fake_cert_len = ${FAKE_CERT_LEN:-2048}
 # Note: geo-blocking is enforced at the host firewall level (iptables/nftables),
-# not via telemt config. See: mtproxymax info -> Geo-Blocking
+# not via telemt config. See: mtproxywidum info -> Geo-Blocking
 
 [access]
 replay_check_len = ${r_check}
@@ -1513,7 +1514,7 @@ _fetch_metrics() {
     fi
     if [ -z "$_METRICS_CACHE" ] && [ "${ENGINE_MODE:-docker}" = "docker" ] && command -v docker &>/dev/null; then
         local _cip
-        _cip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mtproxymax 2>/dev/null | head -1)
+        _cip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mtproxywidum 2>/dev/null | head -1)
         [ -n "$_cip" ] && _METRICS_CACHE=$(curl -s --noproxy '*' --max-time 2 "http://${_cip}:${mport}/metrics" 2>/dev/null) || true
     fi
     _METRICS_CACHE_AGE=$now
@@ -1527,18 +1528,18 @@ traffic_tracking_setup() {
     local port="${PROXY_PORT:-443}"
 
     if [ "$_TRACKED_PORT" = "$port" ] && \
-       iptables -C "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxymax-in" 2>/dev/null; then
+       iptables -C "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxywidum-in" 2>/dev/null; then
         return 0
     fi
 
     iptables -N "$IPTABLES_CHAIN" 2>/dev/null || true
     iptables -F "$IPTABLES_CHAIN" 2>/dev/null
-    iptables -A "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxymax-in" 2>/dev/null
-    iptables -A "$IPTABLES_CHAIN" -p tcp --sport "$port" -m comment --comment "mtproxymax-out" 2>/dev/null
-    iptables -C INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null || \
-        iptables -I INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null
-    iptables -C OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null || \
-        iptables -I OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null
+    iptables -A "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxywidum-in" 2>/dev/null
+    iptables -A "$IPTABLES_CHAIN" -p tcp --sport "$port" -m comment --comment "mtproxywidum-out" 2>/dev/null
+    iptables -C INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null || \
+        iptables -I INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null
+    iptables -C OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null || \
+        iptables -I OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null
 
     _TRACKED_PORT="$port"
 }
@@ -1547,8 +1548,8 @@ traffic_tracking_setup() {
 traffic_tracking_teardown() {
     local i
     for i in 1 2 3; do
-        iptables -D INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null || true
-        iptables -D OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxymax" 2>/dev/null || true
+        iptables -D INPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null || true
+        iptables -D OUTPUT -j "$IPTABLES_CHAIN" -m comment --comment "mtproxywidum" 2>/dev/null || true
         iptables -D INPUT -j "$IPTABLES_CHAIN" 2>/dev/null || true
         iptables -D OUTPUT -j "$IPTABLES_CHAIN" 2>/dev/null || true
     done
@@ -1579,15 +1580,15 @@ get_proxy_stats() {
     # Fallback: iptables
     local port="${PROXY_PORT:-443}"
     if [ "$_TRACKED_PORT" != "$port" ] || \
-       ! iptables -C "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxymax-in" 2>/dev/null; then
+       ! iptables -C "$IPTABLES_CHAIN" -p tcp --dport "$port" -m comment --comment "mtproxywidum-in" 2>/dev/null; then
         traffic_tracking_setup
     fi
 
     local stats
     stats=$(iptables -L "$IPTABLES_CHAIN" -v -n -x 2>/dev/null)
     local bytes_in bytes_out
-    bytes_in=$(echo "$stats" | awk '/mtproxymax-in/ {print $2; exit}')
-    bytes_out=$(echo "$stats" | awk '/mtproxymax-out/ {print $2; exit}')
+    bytes_in=$(echo "$stats" | awk '/mtproxywidum-in/ {print $2; exit}')
+    bytes_out=$(echo "$stats" | awk '/mtproxywidum-out/ {print $2; exit}')
     local connections
     connections=$(ss -tn state established 2>/dev/null | grep -c ":${port} " || echo "0")
 
@@ -2038,7 +2039,7 @@ secret_add_batch() {
     local labels=("$@")
 
     if [ ${#labels[@]} -eq 0 ]; then
-        log_error "Usage: mtproxymax secret add-batch <label1> <label2> ..."
+        log_error "Usage: mtproxywidum secret add-batch <label1> <label2> ..."
         return 1
     fi
 
@@ -2071,7 +2072,7 @@ secret_remove_batch() {
     local labels=("$@")
 
     if [ ${#labels[@]} -eq 0 ]; then
-        log_error "Usage: mtproxymax secret remove-batch <label1> <label2> ..."
+        log_error "Usage: mtproxywidum secret remove-batch <label1> <label2> ..."
         return 1
     fi
 
@@ -2123,7 +2124,7 @@ secret_list() {
 
     if [ ${#SECRETS_LABELS[@]} -eq 0 ]; then
         log_info "No secrets configured"
-        echo -e "  ${DIM}Run: mtproxymax secret add <label>${NC}"
+        echo -e "  ${DIM}Run: mtproxywidum secret add <label>${NC}"
         return
     fi
 
@@ -2444,7 +2445,7 @@ secret_edit_note() {
 secret_set_adtag() {
     check_root
     local label="$1" ad_tag="$2" no_restart="${3:-false}"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret adtag <label> [32-hex-tag|clear]"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret adtag <label> [32-hex-tag|clear]"; return 1; }
 
     ad_tag=$(echo "${ad_tag:-}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
     if [[ "$ad_tag" =~ ^(clear|remove|off|delete)$ ]] || [ -z "$ad_tag" ]; then
@@ -2535,7 +2536,7 @@ secret_reenable() {
 secret_reset_traffic() {
     local label="${1:-}"
     local no_reload="${2:-}"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret reset-traffic <label|all>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret reset-traffic <label|all>"; return 1; }
 
     local _ut="${STATS_DIR}/user_traffic"
     local _snap="${STATS_DIR}/user_traffic_snapshot"
@@ -2696,7 +2697,7 @@ secret_show_limits() {
 # Rename a secret's label
 secret_rename() {
     local old_label="$1" new_label="$2"
-    [ -z "$old_label" ] || [ -z "$new_label" ] && { log_error "Usage: mtproxymax secret rename <old-label> <new-label>"; return 1; }
+    [ -z "$old_label" ] || [ -z "$new_label" ] && { log_error "Usage: mtproxywidum secret rename <old-label> <new-label>"; return 1; }
 
     # Validate new label
     [[ "$new_label" =~ ^[a-zA-Z0-9_-]+$ ]] || { log_error "Label must be alphanumeric (a-z, 0-9, _, -)"; return 1; }
@@ -2723,7 +2724,7 @@ secret_rename() {
 # Clone a secret with all its limits
 secret_clone() {
     local src_label="$1" new_label="$2"
-    [ -z "$src_label" ] || [ -z "$new_label" ] && { log_error "Usage: mtproxymax secret clone <source-label> <new-label>"; return 1; }
+    [ -z "$src_label" ] || [ -z "$new_label" ] && { log_error "Usage: mtproxywidum secret clone <source-label> <new-label>"; return 1; }
 
     # Validate new label
     [[ "$new_label" =~ ^[a-zA-Z0-9_-]+$ ]] || { log_error "Label must be alphanumeric (a-z, 0-9, _, -)"; return 1; }
@@ -2766,7 +2767,7 @@ secret_clone() {
 # Extend all secrets' expiry by N days
 secret_bulk_extend() {
     local days="$1"
-    [ -z "$days" ] && { log_error "Usage: mtproxymax secret bulk-extend <days>"; return 1; }
+    [ -z "$days" ] && { log_error "Usage: mtproxywidum secret bulk-extend <days>"; return 1; }
     [[ "$days" =~ ^[0-9]+$ ]] && [ "$days" -gt 0 ] || { log_error "Days must be a positive number"; return 1; }
 
     local now_epoch extended=0
@@ -2815,7 +2816,7 @@ secret_export() {
 # Import secrets from CSV file
 secret_import() {
     local file="$1"
-    [ -z "$file" ] && { log_error "Usage: mtproxymax secret import <file>"; return 1; }
+    [ -z "$file" ] && { log_error "Usage: mtproxywidum secret import <file>"; return 1; }
     [ -f "$file" ] || { log_error "File not found: ${file}"; return 1; }
 
     local added=0 skipped=0
@@ -2974,7 +2975,7 @@ secret_disable_expired() {
 # Extend a secret's expiry by N days
 secret_extend() {
     local label="$1" days="$2"
-    [ -z "$label" ] || [ -z "$days" ] && { log_error "Usage: mtproxymax secret extend <label> <days>"; return 1; }
+    [ -z "$label" ] || [ -z "$days" ] && { log_error "Usage: mtproxywidum secret extend <label> <days>"; return 1; }
     [[ "$days" =~ ^[0-9]+$ ]] && [ "$days" -gt 0 ] || { log_error "Days must be a positive number"; return 1; }
 
     local idx=-1 i
@@ -3225,12 +3226,12 @@ run_doctor() {
         issues=$((issues + 1))
     fi
 
-    [ "${expired:-0}" -gt 0 ] && { echo -e "  ${YELLOW}!${NC}  ${expired} expired secret(s) — run: mtproxymax secret disable-expired"; issues=$((issues + 1)); }
+    [ "${expired:-0}" -gt 0 ] && { echo -e "  ${YELLOW}!${NC}  ${expired} expired secret(s) — run: mtproxywidum secret disable-expired"; issues=$((issues + 1)); }
     [ "${near_expiry:-0}" -gt 0 ] && echo -e "  ${YELLOW}!${NC}  ${near_expiry} secret(s) expiring within 3 days"
 
     # Disk space
     local disk_pct
-    disk_pct=$(df -h "${INSTALL_DIR:-/opt/mtproxymax}" 2>/dev/null | awk 'NR==2{gsub(/%/,"",$5); print $5}')
+    disk_pct=$(df -h "${INSTALL_DIR:-/opt/mtproxywidum}" 2>/dev/null | awk 'NR==2{gsub(/%/,"",$5); print $5}')
     if [ -n "$disk_pct" ] && [ "$disk_pct" -ge 90 ] 2>/dev/null; then
         echo -e "  ${RED}${SYM_CROSS}${NC} Disk usage ${disk_pct}% — critically low"
         issues=$((issues + 1))
@@ -3244,7 +3245,7 @@ run_doctor() {
     if [ -f "${CONFIG_DIR}/config.toml" ]; then
         echo -e "  ${GREEN}${SYM_CHECK}${NC} Config file exists"
     else
-        echo -e "  ${RED}${SYM_CROSS}${NC} Config file missing — run: mtproxymax restart"
+        echo -e "  ${RED}${SYM_CROSS}${NC} Config file missing — run: mtproxywidum restart"
         issues=$((issues + 1))
     fi
 
@@ -3280,6 +3281,9 @@ run_doctor() {
     load_cloud_backup_config 2>/dev/null || true
     if [ "${CLOUD_BACKUP_ENABLED:-false}" = "true" ]; then
         echo -e "  ${GREEN}${SYM_CHECK}${NC} Cloud Backups enabled (${CLOUD_BACKUP_MODE:-telegram} -> ${CLOUD_BACKUP_TARGET:-admin})"
+    fi
+    if [ -n "${CLIENT_MSS:-}" ]; then
+        echo -e "  ${YELLOW}!${NC}  Telemt Client MSS active (${CLIENT_MSS}) — run 'mtproxywidum upload-test' if upload stalls occur"
     fi
 
     echo ""
@@ -3318,7 +3322,7 @@ _startup_warnings() {
 # Full info for a single secret
 secret_info() {
     local label="${1:-}"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret info <label>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret info <label>"; return 1; }
 
     local idx=-1 i
     for i in "${!SECRETS_LABELS[@]}"; do
@@ -3404,11 +3408,11 @@ secret_generate_links() {
     [ -z "$server_ip" ] && { log_error "Cannot detect server IP"; return 1; }
 
     if [ "$fmt" = "html" ]; then
-        [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxymax-links-$(date +%Y%m%d).html"
+        [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxywidum-links-$(date +%Y%m%d).html"
         {
-            echo "<html><head><meta charset='utf-8'><title>MTProxyMax Links</title>"
+            echo "<html><head><meta charset='utf-8'><title>MTProxyWidum Links</title>"
             echo "<style>body{font-family:monospace;background:#1a1a2e;color:#e0e0e0;padding:20px}a{color:#4fc3f7}.user{margin:20px 0;padding:15px;border:1px solid #333;border-radius:8px}img{margin:10px 0}</style></head><body>"
-            echo "<h1>MTProxyMax Proxy Links</h1><p>Generated: $(date -u '+%Y-%m-%d %H:%M UTC')</p>"
+            echo "<h1>MTProxyWidum Proxy Links</h1><p>Generated: $(date -u '+%Y-%m-%d %H:%M UTC')</p>"
             local i
             for i in "${!SECRETS_LABELS[@]}"; do
                 [ "${SECRETS_ENABLED[$i]}" = "true" ] || continue
@@ -3421,9 +3425,9 @@ secret_generate_links() {
             echo "</body></html>"
         } > "$outfile"
     else
-        [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxymax-links-$(date +%Y%m%d).txt"
+        [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxywidum-links-$(date +%Y%m%d).txt"
         {
-            echo "# MTProxyMax Proxy Links — $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "# MTProxyWidum Proxy Links — $(date -u '+%Y-%m-%d %H:%M UTC')"
             echo ""
             local i
             for i in "${!SECRETS_LABELS[@]}"; do
@@ -3443,7 +3447,7 @@ secret_generate_links() {
 # Search secrets by partial label or note content
 secret_search() {
     local query="$1"
-    [ -z "$query" ] && { log_error "Usage: mtproxymax secret search <query>"; return 1; }
+    [ -z "$query" ] && { log_error "Usage: mtproxywidum secret search <query>"; return 1; }
 
     local found=0 i
     local query_lower; query_lower=$(echo "$query" | tr '[:upper:]' '[:lower:]')
@@ -3465,7 +3469,7 @@ secret_search() {
 # Archive a secret (soft-delete, restorable)
 secret_archive() {
     local label="$1"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret archive <label>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret archive <label>"; return 1; }
 
     local idx=-1 i
     for i in "${!SECRETS_LABELS[@]}"; do
@@ -3496,13 +3500,13 @@ secret_archive() {
     SECRETS_AD_TAGS=("${_nat[@]}")
     save_secrets
     reload_proxy_config
-    log_success "Secret '${label}' archived (restore with: mtproxymax secret unarchive ${label})"
+    log_success "Secret '${label}' archived (restore with: mtproxywidum secret unarchive ${label})"
 }
 
 # Unarchive (restore) a secret
 secret_unarchive() {
     local label="$1"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret unarchive <label>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret unarchive <label>"; return 1; }
 
     local archive_file="${INSTALL_DIR}/secrets_archive.conf"
     [ -f "$archive_file" ] || { log_error "No archived secrets"; return 1; }
@@ -3674,7 +3678,7 @@ secret_export_json() {
 # Rename secret labels by prefix
 secret_rename_prefix() {
     local old_p="$1" new_p="$2" count=0 i
-    [ -z "$old_p" ] && { log_error "Usage: mtproxymax secret rename-prefix <old_prefix> <new_prefix>"; return 1; }
+    [ -z "$old_p" ] && { log_error "Usage: mtproxywidum secret rename-prefix <old_prefix> <new_prefix>"; return 1; }
     for i in "${!SECRETS_LABELS[@]}"; do
         local label="${SECRETS_LABELS[$i]}"
         if [[ "$label" == "$old_p"* ]]; then
@@ -3726,7 +3730,7 @@ show_uptime_oneliner() {
 # Send custom notification via Telegram
 send_notify() {
     local msg="$1"
-    [ -z "$msg" ] && { log_error "Usage: mtproxymax notify <message>"; return 1; }
+    [ -z "$msg" ] && { log_error "Usage: mtproxywidum notify <message>"; return 1; }
     [ "$TELEGRAM_ENABLED" != "true" ] && { log_error "Telegram bot is not configured"; return 1; }
     [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] && { log_error "Telegram bot token or chat ID not set"; return 1; }
     if telegram_send_message "📢 ${msg}"; then
@@ -3769,7 +3773,7 @@ PROFILES_DIR="${INSTALL_DIR}/profiles"
 
 profile_save() {
     local name="$1"
-    [ -z "$name" ] && { log_error "Usage: mtproxymax profile save <name>"; return 1; }
+    [ -z "$name" ] && { log_error "Usage: mtproxywidum profile save <name>"; return 1; }
     [[ "$name" =~ ^[a-zA-Z0-9_-]+$ ]] || { log_error "Profile name must be alphanumeric"; return 1; }
 
     local dir="${PROFILES_DIR}/${name}"
@@ -3783,7 +3787,7 @@ profile_save() {
 
 profile_load() {
     local name="$1"
-    [ -z "$name" ] && { log_error "Usage: mtproxymax profile load <name>"; return 1; }
+    [ -z "$name" ] && { log_error "Usage: mtproxywidum profile load <name>"; return 1; }
 
     local dir="${PROFILES_DIR}/${name}"
     [ -d "$dir" ] || { log_error "Profile '${name}' not found"; return 1; }
@@ -3826,7 +3830,7 @@ profile_list() {
 
 profile_delete() {
     local name="$1"
-    [ -z "$name" ] && { log_error "Usage: mtproxymax profile delete <name>"; return 1; }
+    [ -z "$name" ] && { log_error "Usage: mtproxywidum profile delete <name>"; return 1; }
     local dir="${PROFILES_DIR}/${name}"
     [ -d "$dir" ] || { log_error "Profile '${name}' not found"; return 1; }
     rm -rf "$dir"
@@ -3859,7 +3863,7 @@ secret_set_tags() {
 secret_tag() {
     local label="$1"; shift 2>/dev/null || true
     local new_tags="$*"
-    [ -z "$label" ] || [ -z "$new_tags" ] && { log_error "Usage: mtproxymax secret tag <label> <tag1,tag2,...>"; return 1; }
+    [ -z "$label" ] || [ -z "$new_tags" ] && { log_error "Usage: mtproxywidum secret tag <label> <tag1,tag2,...>"; return 1; }
 
     # Verify secret exists
     local exists=false i
@@ -3878,14 +3882,14 @@ secret_tag() {
 
 secret_untag() {
     local label="$1"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret untag <label>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret untag <label>"; return 1; }
     secret_set_tags "$label" ""
     log_success "Tags cleared for '${label}'"
 }
 
 secret_list_by_tag() {
     local tag="$1"
-    [ -z "$tag" ] && { log_error "Usage: mtproxymax secret list --tag <tag>"; return 1; }
+    [ -z "$tag" ] && { log_error "Usage: mtproxywidum secret list --tag <tag>"; return 1; }
     [ -f "$_TAGS_FILE" ] || { log_info "No tagged secrets"; return 0; }
 
     local tag_lower; tag_lower=$(echo "$tag" | tr '[:upper:]' '[:lower:]')
@@ -3921,27 +3925,27 @@ maintenance_on() {
     check_root
     local port="${PROXY_PORT:-443}"
     # Idempotent: skip if rule already exists
-    if ! iptables -C INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null; then
-        iptables -I INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null
+    if ! iptables -C INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null; then
+        iptables -I INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null
     fi
     touch "$MAINTENANCE_FILE"
     log_success "Maintenance mode ON — new connections rejected on port ${port}"
-    log_info "Existing connections remain active. Use 'mtproxymax maintenance off' to restore."
+    log_info "Existing connections remain active. Use 'mtproxywidum maintenance off' to restore."
 }
 
 # Reapply maintenance rule if the marker file exists (called on startup)
 maintenance_reapply() {
     [ -f "$MAINTENANCE_FILE" ] || return 0
     local port="${PROXY_PORT:-443}"
-    iptables -C INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null || \
-    iptables -I INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null
+    iptables -C INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null || \
+    iptables -I INPUT -p tcp --dport "$port" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null
 }
 
 maintenance_off() {
     check_root
     # Remove all rules tagged with our comment
-    while iptables -C INPUT -p tcp --dport "${PROXY_PORT:-443}" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null; do
-        iptables -D INPUT -p tcp --dport "${PROXY_PORT:-443}" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxymax-maintenance" 2>/dev/null
+    while iptables -C INPUT -p tcp --dport "${PROXY_PORT:-443}" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null; do
+        iptables -D INPUT -p tcp --dport "${PROXY_PORT:-443}" --syn -j REJECT --reject-with tcp-reset -m comment --comment "mtproxywidum-maintenance" 2>/dev/null
     done
     rm -f "$MAINTENANCE_FILE"
     log_success "Maintenance mode OFF — accepting new connections"
@@ -3967,7 +3971,7 @@ _valid_ip_or_cidr() {
 ban_ip() {
     check_root
     local ip="$1"
-    [ -z "$ip" ] && { log_error "Usage: mtproxymax ban <ip|cidr>"; return 1; }
+    [ -z "$ip" ] && { log_error "Usage: mtproxywidum ban <ip|cidr>"; return 1; }
     _valid_ip_or_cidr "$ip" || { log_error "Invalid IP or CIDR"; return 1; }
 
     # Idempotent: skip if already banned
@@ -3978,7 +3982,7 @@ ban_ip() {
 
     local cmd=iptables
     [[ "$ip" =~ : ]] && cmd=ip6tables
-    $cmd -I INPUT -s "$ip" -j DROP -m comment --comment "mtproxymax-ban" 2>/dev/null || { log_error "Failed to add iptables rule"; return 1; }
+    $cmd -I INPUT -s "$ip" -j DROP -m comment --comment "mtproxywidum-ban" 2>/dev/null || { log_error "Failed to add iptables rule"; return 1; }
 
     echo "$ip" >> "$BANLIST_FILE"
     chmod 600 "$BANLIST_FILE"
@@ -3988,12 +3992,12 @@ ban_ip() {
 unban_ip() {
     check_root
     local ip="$1"
-    [ -z "$ip" ] && { log_error "Usage: mtproxymax unban <ip|cidr>"; return 1; }
+    [ -z "$ip" ] && { log_error "Usage: mtproxywidum unban <ip|cidr>"; return 1; }
 
     local cmd=iptables
     [[ "$ip" =~ : ]] && cmd=ip6tables
-    while $cmd -C INPUT -s "$ip" -j DROP -m comment --comment "mtproxymax-ban" 2>/dev/null; do
-        $cmd -D INPUT -s "$ip" -j DROP -m comment --comment "mtproxymax-ban" 2>/dev/null
+    while $cmd -C INPUT -s "$ip" -j DROP -m comment --comment "mtproxywidum-ban" 2>/dev/null; do
+        $cmd -D INPUT -s "$ip" -j DROP -m comment --comment "mtproxywidum-ban" 2>/dev/null
     done
 
     if [ -f "$BANLIST_FILE" ]; then
@@ -4031,15 +4035,15 @@ bans_reapply() {
         _valid_ip_or_cidr "$ip" || continue
         local cmd=iptables
         [[ "$ip" =~ : ]] && cmd=ip6tables
-        $cmd -C INPUT -s "$ip" -j DROP -m comment --comment "mtproxymax-ban" 2>/dev/null || \
-        $cmd -I INPUT -s "$ip" -j DROP -m comment --comment "mtproxymax-ban" 2>/dev/null
+        $cmd -C INPUT -s "$ip" -j DROP -m comment --comment "mtproxywidum-ban" 2>/dev/null || \
+        $cmd -I INPUT -s "$ip" -j DROP -m comment --comment "mtproxywidum-ban" 2>/dev/null
     done < "$BANLIST_FILE"
 }
 
 # ── Per-user activity log ──
 secret_logs() {
     local label="$1" lines="${2:-50}"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret logs <label> [lines]"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret logs <label> [lines]"; return 1; }
     [[ "$lines" =~ ^[0-9]+$ ]] || lines=50
 
     if [ ! -f "$CONNECTION_LOG" ] || [ ! -s "$CONNECTION_LOG" ]; then
@@ -4063,7 +4067,7 @@ secret_logs() {
 MIGRATION_FILES=("$SETTINGS_FILE" "$SECRETS_FILE" "$UPSTREAMS_FILE" "$INSTANCES_FILE" "$_TAGS_FILE" "${INSTALL_DIR}/secrets_archive.conf" "$BANLIST_FILE" "$SPEED_LIMITS_FILE" "$FLEET_FILE" "$SSL_CONF_FILE" "$CLOUD_BACKUP_FILE" "${INSTALL_DIR}/pools.conf" "${INSTALL_DIR}/calendar.conf" "${INSTALL_DIR}/webhooks.conf" "${INSTALL_DIR}/geofence.conf" "${INSTALL_DIR}/decoy.conf" "${INSTALL_DIR}/failover.conf" "${INSTALL_DIR}/eco_mode.conf" "$VOUCHERS_FILE" "$ADMINS_FILE")
 
 migrate_export() {
-    local out="${1:-$(get_export_dir)/mtproxymax-migrate-$(date +%Y%m%d-%H%M%S).tar.gz}"
+    local out="${1:-$(get_export_dir)/mtproxywidum-migrate-$(date +%Y%m%d-%H%M%S).tar.gz}"
     local tmp; tmp=$(mktemp -d) || { log_error "Cannot create temp dir"; return 1; }
     _TEMP_FILES+=("$tmp")
     local count=0
@@ -4085,7 +4089,7 @@ migrate_export() {
 migrate_import() {
     check_root
     local file="$1"
-    [ -z "$file" ] && { log_error "Usage: mtproxymax migrate import <file.tar.gz>"; return 1; }
+    [ -z "$file" ] && { log_error "Usage: mtproxywidum migrate import <file.tar.gz>"; return 1; }
     [ -f "$file" ] || { log_error "File not found: ${file}"; return 1; }
 
     # Backup current state before overwriting
@@ -4129,7 +4133,7 @@ backup_create_encrypted() {
 
     mkdir -p "$BACKUP_DIR"
     local ts; ts=$(date +%Y%m%d-%H%M%S)
-    local plain="${BACKUP_DIR}/mtproxymax-${ts}.tar.gz"
+    local plain="${BACKUP_DIR}/mtproxywidum-${ts}.tar.gz"
     local enc="${plain}.enc"
 
     migrate_export "$plain" >/dev/null || { log_error "Backup export failed"; return 1; }
@@ -4172,7 +4176,7 @@ backup_create_encrypted() {
 backup_restore_encrypted() {
     check_root
     local file="$1"
-    [ -z "$file" ] && { log_error "Usage: mtproxymax backup restore-encrypted <file.tar.gz.enc>"; return 1; }
+    [ -z "$file" ] && { log_error "Usage: mtproxywidum backup restore-encrypted <file.tar.gz.enc>"; return 1; }
     [ -f "$file" ] || { log_error "File not found: ${file}"; return 1; }
     command -v openssl &>/dev/null || { log_error "openssl is required"; return 1; }
 
@@ -4197,7 +4201,7 @@ backup_restore_encrypted() {
 # ── Comprehensive server info ──
 show_server_info() {
     echo ""
-    draw_header "MTPROXYMAX SERVER INFO"
+    draw_header "MTPROXYWIDUM SERVER INFO"
     echo ""
 
     # System
@@ -4311,7 +4315,7 @@ secret_get_quota_reset_day() {
 secret_set_quota_reset_day() {
     check_root
     local label="$1" day="$2"
-    [ -z "$label" ] && { log_error "Usage: mtproxymax secret quota-reset <label> <day|off>"; return 1; }
+    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret quota-reset <label> <day|off>"; return 1; }
 
     # Verify secret exists
     local exists=false i
@@ -4431,7 +4435,7 @@ _TEMPLATES_FILE="${INSTALL_DIR}/templates.conf"
 template_save() {
     check_root
     local name="$1" conns="${2:-0}" ips="${3:-0}" quota="${4:-0}" expires="${5:-0}" notes="${6:-}"
-    [ -z "$name" ] && { log_error "Usage: mtproxymax template save <name> <conns> <ips> <quota> [expires] [notes]"; return 1; }
+    [ -z "$name" ] && { log_error "Usage: mtproxywidum template save <name> <conns> <ips> <quota> [expires] [notes]"; return 1; }
     [[ "$name" =~ ^[a-zA-Z0-9_-]+$ ]] || { log_error "Name must be alphanumeric"; return 1; }
     [[ "$conns" =~ ^[0-9]+$ ]] || { log_error "Conns must be a number"; return 1; }
     [[ "$ips" =~ ^[0-9]+$ ]] || { log_error "IPs must be a number"; return 1; }
@@ -4475,7 +4479,7 @@ template_list() {
 template_delete() {
     check_root
     local name="$1"
-    [ -z "$name" ] && { log_error "Usage: mtproxymax template delete <name>"; return 1; }
+    [ -z "$name" ] && { log_error "Usage: mtproxywidum template delete <name>"; return 1; }
     [ -f "$_TEMPLATES_FILE" ] || { log_error "No templates saved"; return 1; }
 
     local tmp; tmp=$(_mktemp) || return 1
@@ -4488,7 +4492,7 @@ template_delete() {
 template_apply() {
     check_root
     local name="$1" label="$2"
-    [ -z "$name" ] || [ -z "$label" ] && { log_error "Usage: mtproxymax template apply <name> <label>"; return 1; }
+    [ -z "$name" ] || [ -z "$label" ] && { log_error "Usage: mtproxywidum template apply <name> <label>"; return 1; }
     [ -f "$_TEMPLATES_FILE" ] || { log_error "No templates saved"; return 1; }
 
     local line; line=$(grep "^${name}|" "$_TEMPLATES_FILE" | head -1)
@@ -4631,9 +4635,9 @@ tune_list_params() {
 tune_set() {
     check_root
     local param="$1" value="$2"
-    [ -z "$param" ] && { log_error "Usage: mtproxymax tune set <param> <value>"; return 1; }
+    [ -z "$param" ] && { log_error "Usage: mtproxywidum tune set <param> <value>"; return 1; }
 
-    local entry; entry=$(_tune_lookup "$param") || { log_error "Unknown param '${param}'. Run: mtproxymax tune list"; return 1; }
+    local entry; entry=$(_tune_lookup "$param") || { log_error "Unknown param '${param}'. Run: mtproxywidum tune list"; return 1; }
     local p sect regex
     IFS=':' read -r p sect regex <<< "$entry"
 
@@ -4663,7 +4667,7 @@ tune_set() {
 tune_clear() {
     check_root
     local param="$1"
-    [ -z "$param" ] && { log_error "Usage: mtproxymax tune clear <param|all>"; return 1; }
+    [ -z "$param" ] && { log_error "Usage: mtproxywidum tune clear <param|all>"; return 1; }
     [ ! -f "$_TUNE_FILE" ] && { log_info "No tunings set"; return 0; }
 
     if ! confirm_settings_restart "clearing engine tune '${param}'"; then
@@ -4806,10 +4810,10 @@ show_history() {
 # ── Bash completion ──
 emit_completion() {
     cat <<'COMPL'
-# mtproxymax bash completion — generated by `mtproxymax completion`
-# Install: sudo mtproxymax completion > /etc/bash_completion.d/mtproxymax
-# Or: eval "$(mtproxymax completion)"
-_mtproxymax_completion() {
+# mtproxywidum bash completion — generated by `mtproxywidum completion`
+# Install: sudo mtproxywidum completion > /etc/bash_completion.d/mtproxywidum
+# Or: eval "$(mtproxywidum completion)"
+_mtproxywidum_completion() {
     local cur prev cmd
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
@@ -4818,7 +4822,7 @@ _mtproxymax_completion() {
 
     # Top-level commands
     if [ "$COMP_CWORD" -eq 1 ]; then
-        local cmds="start stop restart status menu install uninstall secret upstream port ip domain mask-backend mask-relay-bytes tg-urls adtag traffic connections metrics logs health doctor info maintenance ban unban bans migrate changelog backup restore backups config uptime notify port-check profile auto-rotate template sweep tune verify history completion speedtest telegram replication rebuild update engine geoblock sni-policy digest ping-dc shield stealth clamp-mss domain-pool dpi-inspect cover-watchdog lockdown port-pool qos happy-hours notify-expiry abuse-watch broadcast export-lb ddns diag-dump snapshot daily-report ssh-shield net-grade onboard tcp-boost leak-scan cert-check clone-link bootstrap heal auto-heal tcp-clean socket-boost tls-pad honeypot tcp-fastpath ram-tune port-hop cpu-tune top export-client export-report qr-sheet tag guest pool calendar geofence decoy auto-sni dc-optimize ip-score webhook failover eco-mode chaos-test evacuate speed-limit fleet ssl backup-cloud"
+        local cmds="start stop restart status menu install uninstall secret upstream port ip domain mask-backend mask-relay-bytes tg-urls adtag traffic connections metrics logs health doctor info maintenance ban unban bans migrate changelog backup restore backups config uptime notify port-check profile auto-rotate template sweep tune verify history completion speedtest telegram replication rebuild update engine geoblock sni-policy digest ping-dc shield stealth clamp-mss domain-pool dpi-inspect cover-watchdog lockdown port-pool qos happy-hours notify-expiry abuse-watch broadcast export-lb ddns diag-dump snapshot daily-report ssh-shield net-grade onboard tcp-boost leak-scan cert-check clone-link bootstrap heal auto-heal tcp-clean socket-boost tls-pad honeypot tcp-fastpath ram-tune port-hop cpu-tune top export-client export-report qr-sheet tag guest pool calendar geofence decoy auto-sni dc-optimize ip-score webhook failover eco-mode chaos-test evacuate speed-limit fleet ssl backup-cloud upload-test"
         COMPREPLY=( $(compgen -W "${cmds}" -- "${cur}") )
         return 0
     fi
@@ -4926,7 +4930,7 @@ _mtproxymax_completion() {
     esac
     return 0
 }
-complete -F _mtproxymax_completion mtproxymax
+complete -F _mtproxywidum_completion mtproxywidum
 COMPL
 }
 
@@ -5037,6 +5041,112 @@ run_ping_dc() {
     fi
 }
 
+run_upload_test() {
+    echo ""
+    draw_header "UPLOAD MECHANISM DIAGNOSTICS"
+    echo ""
+    echo -e "  ${DIM}Auditing proxy upload mechanism, socket write buffers, and DC egress...${NC}"
+    echo ""
+
+    local issues=0 warnings=0
+
+    # 1. Telemt client_mss Audit
+    load_settings 2>/dev/null || true
+    printf "  %-35s" "Telemt Client MSS mode:"
+    if [ -n "${CLIENT_MSS:-}" ]; then
+        echo -e "${YELLOW}${CLIENT_MSS}${NC} (anti-censorship segment sizing)"
+        echo -e "    ${YELLOW}! Note:${NC} 'tspu' mode can throttle or drop large upload chunks on tunneled/wireguard paths."
+        echo -e "      If users experience upload stalls, run: ${BOLD}mtproxywidum client-mss off${NC}"
+        warnings=$((warnings + 1))
+    else
+        echo -e "${GREEN}off (disabled — max throughput default)${NC}"
+    fi
+
+    # 2. Kernel Socket Write Buffer (wmem) Audit
+    printf "  %-35s" "Kernel TCP Write Buffer (wmem_max):"
+    local wmem_max wmem_def tcp_wmem
+    wmem_max=$(sysctl -n net.core.wmem_max 2>/dev/null || echo "212992")
+    wmem_def=$(sysctl -n net.core.wmem_default 2>/dev/null || echo "212992")
+    tcp_wmem=$(sysctl -n net.ipv4.tcp_wmem 2>/dev/null || echo "4096 16384 4194304")
+
+    local wmem_max_int="${wmem_max%.*}"
+    if [ "${wmem_max_int:-0}" -ge 8388608 ]; then
+        echo -e "${GREEN}$(format_bytes "$wmem_max_int") (${wmem_max_int} bytes)${NC}"
+    else
+        echo -e "${YELLOW}$(format_bytes "$wmem_max_int") (${wmem_max_int} bytes)${NC}"
+        echo -e "    ${YELLOW}! Warning:${NC} Low socket write buffer limit may restrict upload throughput."
+        echo -e "      To optimize, run: ${BOLD}mtproxywidum tcp-boost on${NC} or ${BOLD}mtproxywidum ram-tune auto${NC}"
+        warnings=$((warnings + 1))
+    fi
+
+    # 3. Live Traffic Upload vs Download Ratio Audit
+    printf "  %-35s" "Live Ingress vs Egress metrics:"
+    local _metrics
+    _metrics=$(fetch_metrics 2>/dev/null || true)
+    if [ -n "$_metrics" ]; then
+        local up_bytes down_bytes
+        up_bytes=$(echo "$_metrics" | awk '/^telemt_user_octets_from_client\{/{s+=$NF}END{printf "%.0f",s}')
+        down_bytes=$(echo "$_metrics" | awk '/^telemt_user_octets_to_client\{/{s+=$NF}END{printf "%.0f",s}')
+
+        local up_fmt; up_fmt=$(format_bytes "${up_bytes:-0}")
+        local down_fmt; down_fmt=$(format_bytes "${down_bytes:-0}")
+
+        echo -e "Upload RX: ${CYAN}${up_fmt}${NC} | Download TX: ${CYAN}${down_fmt}${NC}"
+        if [ "${down_bytes:-0}" -gt 1048576 ] && [ "${up_bytes:-0}" -eq 0 ]; then
+            echo -e "    ${RED}${SYM_CROSS} Alert:${NC} Download traffic exists (${down_fmt}) but 0 bytes uploaded!"
+            echo -e "      Check if client_mss is blocking upload packets or if firewall is blocking outbound DC connections."
+            issues=$((issues + 1))
+        fi
+    else
+        echo -e "${DIM}Metrics offline (proxy container stopped)${NC}"
+    fi
+
+    # 4. Outbound Telegram DC Port 443 Egress Reachability
+    echo ""
+    echo -e "  ${BOLD}Outbound Telegram DC Port 443 Egress Check:${NC}"
+    local dc_names=("DC1 (MIA)" "DC2 (AMS)" "DC3 (MIA)" "DC4 (AMS)" "DC5 (SIN)")
+    local dc_ips=("149.154.175.50" "149.154.167.51" "149.154.175.100" "149.154.167.91" "91.108.56.130")
+
+    local i dc_failed=0
+    for i in "${!dc_ips[@]}"; do
+        local name="${dc_names[$i]}" ip="${dc_ips[$i]}"
+        printf "    %-12s (%-15s:443)  " "$name" "$ip"
+        local time_s
+        time_s=$(curl -o /dev/null -s -w "%{time_connect}" --connect-timeout 4 "http://${ip}:443" 2>/dev/null || echo "")
+        if [ -n "$time_s" ] && [ "$time_s" != "0.000000" ]; then
+            local time_ms
+            time_ms=$(awk -v t="$time_s" 'BEGIN { printf "%.1f", t * 1000 }')
+            printf "${GREEN}%s ms${NC}\n" "$time_ms"
+        else
+            echo -e "${RED}CONNECTION TIMEOUT / BLOCKED${NC}"
+            dc_failed=$((dc_failed + 1))
+        fi
+    done
+    if [ "$dc_failed" -gt 0 ]; then
+        echo -e "    ${YELLOW}! Note:${NC} ${dc_failed} DC(s) blocked on port 443. Outbound uploads to those DCs may fail."
+        issues=$((issues + 1))
+    fi
+
+    # 5. QoS Upload Rules Audit
+    load_speed_limits 2>/dev/null || true
+    printf "\n  %-35s" "QoS Bandwidth Shaping Upload Rules:"
+    if [ "${#SPEED_LIMIT_TARGETS[@]}" -gt 0 ]; then
+        echo -e "${GREEN}${#SPEED_LIMIT_TARGETS[@]} active rule(s)${NC}"
+    else
+        echo -e "${DIM}No upload speed limit restrictions active${NC}"
+    fi
+
+    echo ""
+    if [ "$issues" -eq 0 ] && [ "$warnings" -eq 0 ]; then
+        echo -e "  ${BRIGHT_GREEN}${BOLD}Upload Mechanism Status: ALL CHECKS OPTIMAL${NC}"
+    elif [ "$issues" -eq 0 ]; then
+        echo -e "  ${YELLOW}${BOLD}Upload Mechanism Status: OPTIMAL (${warnings} warning(s))${NC}"
+    else
+        echo -e "  ${RED}${BOLD}Upload Mechanism Status: ${issues} issue(s), ${warnings} warning(s) detected${NC}"
+    fi
+    echo ""
+}
+
 # Apply or clean up kernel firewall anti-DPI rules
 apply_firewall_rules() {
     [ -z "${PROXY_PORT:-}" ] && return 0
@@ -5049,23 +5159,23 @@ apply_firewall_rules() {
 
     if command -v iptables >/dev/null 2>&1; then
         for _p in "${_all_ports[@]}"; do
-            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m hashlimit --hashlimit-name mtproxy_syn_in --hashlimit-mode srcip --hashlimit-above 25/sec --hashlimit-burst 60 -m comment --comment "mtproxymax_shield" -j DROP 2>/dev/null; do :; done
+            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m hashlimit --hashlimit-name mtproxy_syn_in --hashlimit-mode srcip --hashlimit-above 25/sec --hashlimit-burst 60 -m comment --comment "mtproxywidum_shield" -j DROP 2>/dev/null; do :; done
             while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --set --name mtproxy_syn 2>/dev/null; do :; done
-            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --set --name mtproxy_syn -m comment --comment "mtproxymax_shield" 2>/dev/null; do :; done
+            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --set --name mtproxy_syn -m comment --comment "mtproxywidum_shield" 2>/dev/null; do :; done
             while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --update --seconds 5 --hitcount 15 --name mtproxy_syn -j DROP 2>/dev/null; do :; done
-            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --update --seconds 5 --hitcount 15 --name mtproxy_syn -m comment --comment "mtproxymax_shield" -j DROP 2>/dev/null; do :; done
-            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --rcheck --seconds 2 --hitcount 20 --name mtproxy_syn -m comment --comment "mtproxymax_shield" -j DROP 2>/dev/null; do :; done
+            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --update --seconds 5 --hitcount 15 --name mtproxy_syn -m comment --comment "mtproxywidum_shield" -j DROP 2>/dev/null; do :; done
+            while iptables -D INPUT -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --rcheck --seconds 2 --hitcount 20 --name mtproxy_syn -m comment --comment "mtproxywidum_shield" -j DROP 2>/dev/null; do :; done
             for _chain in FORWARD OUTPUT POSTROUTING; do
                 while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${_p}" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
-                while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${_p}" -m comment --comment "mtproxymax_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
+                while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${_p}" -m comment --comment "mtproxywidum_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
                 while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${_p}" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
-                while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${_p}" -m comment --comment "mtproxymax_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
+                while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${_p}" -m comment --comment "mtproxywidum_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null; do :; done
             done
         done
     fi
     if command -v nft >/dev/null 2>&1; then
-        nft delete table inet mtproxymax_shield 2>/dev/null || true
-        nft delete table inet mtproxymax_mss 2>/dev/null || true
+        nft delete table inet mtproxywidum_shield 2>/dev/null || true
+        nft delete table inet mtproxywidum_mss 2>/dev/null || true
     fi
 
     if [ "${STEALTH_SHIELD:-false}" = "true" ]; then
@@ -5073,21 +5183,21 @@ apply_firewall_rules() {
         if command -v iptables >/dev/null 2>&1; then
             for _p in "${_all_ports[@]}"; do
                 # Prefer hashlimit with token-bucket burst (25/sec, burst 60) to allow instant multi-socket Telegram client connection without dropping a single packet
-                if iptables -I INPUT 1 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m hashlimit --hashlimit-name mtproxy_syn_in --hashlimit-mode srcip --hashlimit-above 25/sec --hashlimit-burst 60 -m comment --comment "mtproxymax_shield" -j DROP 2>/dev/null; then
+                if iptables -I INPUT 1 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m hashlimit --hashlimit-name mtproxy_syn_in --hashlimit-mode srcip --hashlimit-above 25/sec --hashlimit-burst 60 -m comment --comment "mtproxywidum_shield" -j DROP 2>/dev/null; then
                     _shield_ok=true
                 else
                     # Safe fallback to xt_recent using --rcheck (NEVER --update!) and 20 hits/2s so clients never get trapped in infinite drop loops
-                    iptables -I INPUT 1 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --set --name mtproxy_syn -m comment --comment "mtproxymax_shield" 2>/dev/null && \
-                    iptables -I INPUT 2 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --rcheck --seconds 2 --hitcount 20 --name mtproxy_syn -m comment --comment "mtproxymax_shield" -j DROP 2>/dev/null && _shield_ok=true || true
+                    iptables -I INPUT 1 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --set --name mtproxy_syn -m comment --comment "mtproxywidum_shield" 2>/dev/null && \
+                    iptables -I INPUT 2 -p tcp --dport "${_p}" -m conntrack --ctstate NEW -m recent --rcheck --seconds 2 --hitcount 20 --name mtproxy_syn -m comment --comment "mtproxywidum_shield" -j DROP 2>/dev/null && _shield_ok=true || true
                 fi
             done
         fi
         if [ "$_shield_ok" = "false" ] && command -v nft >/dev/null 2>&1; then
-            nft add table inet mtproxymax_shield 2>/dev/null || true
-            nft add chain inet mtproxymax_shield input '{ type filter hook input priority filter; policy accept; }' 2>/dev/null || true
-            nft add set inet mtproxymax_shield syn_meter '{ type ipv4_addr; flags dynamic,timeout; timeout 60s; }' 2>/dev/null || true
+            nft add table inet mtproxywidum_shield 2>/dev/null || true
+            nft add chain inet mtproxywidum_shield input '{ type filter hook input priority filter; policy accept; }' 2>/dev/null || true
+            nft add set inet mtproxywidum_shield syn_meter '{ type ipv4_addr; flags dynamic,timeout; timeout 60s; }' 2>/dev/null || true
             for _p in "${_all_ports[@]}"; do
-                nft add rule inet mtproxymax_shield input tcp dport "${_p}" ct state new add @syn_meter '{ ip saddr limit rate over 25/second burst 60 packets }' counter drop 2>/dev/null && _shield_ok=true || true
+                nft add rule inet mtproxywidum_shield input tcp dport "${_p}" ct state new add @syn_meter '{ ip saddr limit rate over 25/second burst 60 packets }' counter drop 2>/dev/null && _shield_ok=true || true
             done
         fi
     fi
@@ -5097,18 +5207,18 @@ apply_firewall_rules() {
         if command -v iptables >/dev/null 2>&1; then
             for _p in "${_all_ports[@]}"; do
                 for _chain in FORWARD OUTPUT POSTROUTING; do
-                    iptables -t mangle -I "$_chain" 1 -p tcp --tcp-flags SYN,RST SYN --dport "${_p}" -m comment --comment "mtproxymax_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null && _mss_ok=true || true
-                    iptables -t mangle -I "$_chain" 2 -p tcp --tcp-flags SYN,RST SYN --sport "${_p}" -m comment --comment "mtproxymax_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
+                    iptables -t mangle -I "$_chain" 1 -p tcp --tcp-flags SYN,RST SYN --dport "${_p}" -m comment --comment "mtproxywidum_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null && _mss_ok=true || true
+                    iptables -t mangle -I "$_chain" 2 -p tcp --tcp-flags SYN,RST SYN --sport "${_p}" -m comment --comment "mtproxywidum_mss" -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
                 done
             done
         fi
         if [ "$_mss_ok" = "false" ] && command -v nft >/dev/null 2>&1; then
-            nft add table inet mtproxymax_mss 2>/dev/null || true
-            nft add chain inet mtproxymax_mss forward '{ type filter hook forward priority mangle; policy accept; }' 2>/dev/null || true
-            nft add chain inet mtproxymax_mss postrouting '{ type filter hook postrouting priority mangle; policy accept; }' 2>/dev/null || true
+            nft add table inet mtproxywidum_mss 2>/dev/null || true
+            nft add chain inet mtproxywidum_mss forward '{ type filter hook forward priority mangle; policy accept; }' 2>/dev/null || true
+            nft add chain inet mtproxywidum_mss postrouting '{ type filter hook postrouting priority mangle; policy accept; }' 2>/dev/null || true
             for _p in "${_all_ports[@]}"; do
-                nft add rule inet mtproxymax_mss forward tcp flags '& (syn|rst) == syn' tcp dport "${_p}" tcp option maxseg size set rt mtu 2>/dev/null && _mss_ok=true || true
-                nft add rule inet mtproxymax_mss postrouting tcp flags '& (syn|rst) == syn' tcp sport "${_p}" tcp option maxseg size set rt mtu 2>/dev/null || true
+                nft add rule inet mtproxywidum_mss forward tcp flags '& (syn|rst) == syn' tcp dport "${_p}" tcp option maxseg size set rt mtu 2>/dev/null && _mss_ok=true || true
+                nft add rule inet mtproxywidum_mss postrouting tcp flags '& (syn|rst) == syn' tcp sport "${_p}" tcp option maxseg size set rt mtu 2>/dev/null || true
             done
         fi
     fi
@@ -5127,20 +5237,20 @@ apply_port_pool_rules() {
                 _p="${_p// /}"
                 [ -z "$_p" ] && continue
                 while iptables -t nat -D PREROUTING -p tcp --dport "$_p" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
-                while iptables -t nat -D PREROUTING -p tcp --dport "$_p" -m comment --comment "mtproxymax_portpool" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
-                iptables -t nat -I PREROUTING -p tcp --dport "$_p" -m comment --comment "mtproxymax_portpool" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null || true
+                while iptables -t nat -D PREROUTING -p tcp --dport "$_p" -m comment --comment "mtproxywidum_portpool" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
+                iptables -t nat -I PREROUTING -p tcp --dport "$_p" -m comment --comment "mtproxywidum_portpool" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null || true
             done
         fi
     elif command -v nft >/dev/null 2>&1; then
-        nft delete table inet mtproxymax_pool 2>/dev/null || true
+        nft delete table inet mtproxywidum_pool 2>/dev/null || true
         if [ -n "${PORT_POOL_PORTS:-}" ]; then
-            nft add table inet mtproxymax_pool 2>/dev/null || true
-            nft add chain inet mtproxymax_pool prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
+            nft add table inet mtproxywidum_pool 2>/dev/null || true
+            nft add chain inet mtproxywidum_pool prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
             IFS=',' read -ra _plist <<< "${PORT_POOL_PORTS}"
             for _p in "${_plist[@]}"; do
                 _p="${_p// /}"
                 [ -z "$_p" ] && continue
-                nft add rule inet mtproxymax_pool prerouting tcp dport "$_p" redirect to :"$PROXY_PORT" 2>/dev/null || true
+                nft add rule inet mtproxywidum_pool prerouting tcp dport "$_p" redirect to :"$PROXY_PORT" 2>/dev/null || true
             done
         fi
     fi
@@ -5156,12 +5266,12 @@ apply_port_hop_rules() {
             local s="${_r%%:*}" e="${_r##*:}"
             if command -v iptables >/dev/null 2>&1; then
                 while iptables -t nat -D PREROUTING -p tcp --dport "${s}:${e}" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
-                while iptables -t nat -D PREROUTING -p tcp --dport "${s}:${e}" -m comment --comment "mtproxymax_porthop" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
-                iptables -t nat -I PREROUTING -p tcp --dport "${s}:${e}" -m comment --comment "mtproxymax_porthop" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null || true
+                while iptables -t nat -D PREROUTING -p tcp --dport "${s}:${e}" -m comment --comment "mtproxywidum_porthop" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null; do :; done
+                iptables -t nat -I PREROUTING -p tcp --dport "${s}:${e}" -m comment --comment "mtproxywidum_porthop" -j REDIRECT --to-ports "${PROXY_PORT}" 2>/dev/null || true
             elif command -v nft >/dev/null 2>&1; then
-                nft add table inet mtproxymax_hop 2>/dev/null || true
-                nft add chain inet mtproxymax_hop prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
-                nft add rule inet mtproxymax_hop prerouting tcp dport "${s}-${e}" redirect to :"$PROXY_PORT" 2>/dev/null || true
+                nft add table inet mtproxywidum_hop 2>/dev/null || true
+                nft add chain inet mtproxywidum_hop prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
+                nft add rule inet mtproxywidum_hop prerouting tcp dport "${s}-${e}" redirect to :"$PROXY_PORT" 2>/dev/null || true
             fi
         done
     fi
@@ -5195,7 +5305,7 @@ run_shield() {
             echo ""
             ;;
         *)
-            log_error "Usage: mtproxymax shield [on|off|status]"
+            log_error "Usage: mtproxywidum shield [on|off|status]"
             return 1
             ;;
     esac
@@ -5224,7 +5334,7 @@ run_clamp_mss() {
             if [ "${STEALTH_MSS_CLAMP:-false}" = "true" ]; then
                 echo -e "     Status: ${GREEN}ENABLED${NC} (Active alignment on port ${PROXY_PORT})"
                 if command -v iptables >/dev/null 2>&1; then
-                    local _rule_cnt; _rule_cnt=$(iptables -t mangle -S 2>/dev/null | grep -c "mtproxymax_mss" || echo 0)
+                    local _rule_cnt; _rule_cnt=$(iptables -t mangle -S 2>/dev/null | grep -c "mtproxywidum_mss" || echo 0)
                     echo -e "     Kernel Hooks: ${CYAN}${_rule_cnt} Netfilter rules active across FORWARD, OUTPUT & POSTROUTING${NC}"
                 fi
             else
@@ -5233,7 +5343,7 @@ run_clamp_mss() {
             echo ""
             ;;
         *)
-            log_error "Usage: mtproxymax clamp-mss [on|off|status]"
+            log_error "Usage: mtproxywidum clamp-mss [on|off|status]"
             return 1
             ;;
     esac
@@ -5255,13 +5365,13 @@ run_client_mss() {
 
             local clamp_status="disabled"
             [ "${STEALTH_MSS_CLAMP:-false}" = "true" ] && clamp_status="${GREEN}enabled${NC}"
-            echo -e "  Kernel PMTU clamp:  ${clamp_status} (mtproxymax clamp-mss)"
+            echo -e "  Kernel PMTU clamp:  ${clamp_status} (mtproxywidum clamp-mss)"
 
             if [ -n "${CLIENT_MSS:-}" ] && [ "${STEALTH_MSS_CLAMP:-false}" = "true" ]; then
                 echo -e "\n  ${YELLOW}! Warning:${NC} Both Telemt client_mss and kernel clamp-mss are active."
-                echo -e "    If media downloads are slow, try turning client-mss off: ${BOLD}mtproxymax client-mss off${NC}"
+                echo -e "    If media downloads are slow, try turning client-mss off: ${BOLD}mtproxywidum client-mss off${NC}"
             fi
-            echo -e "\n  ${DIM}Usage: mtproxymax client-mss [status|off|tspu]${NC}"
+            echo -e "\n  ${DIM}Usage: mtproxywidum client-mss [status|off|tspu]${NC}"
             return 0
             ;;
         off|none|clear|disable)
@@ -5293,7 +5403,7 @@ run_client_mss() {
             fi
             ;;
         *)
-            log_error "Usage: mtproxymax client-mss [status|off|tspu]"
+            log_error "Usage: mtproxywidum client-mss [status|off|tspu]"
             return 1
             ;;
     esac
@@ -5335,7 +5445,7 @@ run_stealth_preset() {
             echo ""
             ;;
         *)
-            log_error "Usage: mtproxymax stealth [ultra|normal|status]"
+            log_error "Usage: mtproxywidum stealth [ultra|normal|status]"
             return 1
             ;;
     esac
@@ -5430,7 +5540,7 @@ run_dpi_inspect() {
     if [ "${STEALTH_MSS_CLAMP:-false}" = "true" ]; then
         local mss_rules=0
         if command -v iptables >/dev/null 2>&1; then
-            mss_rules=$(iptables -t mangle -S 2>/dev/null | grep -c "mtproxymax_mss" || echo 0)
+            mss_rules=$(iptables -t mangle -S 2>/dev/null | grep -c "mtproxywidum_mss" || echo 0)
         fi
         if [ "$mss_rules" -gt 0 ] 2>/dev/null; then
             echo -e "${GREEN}ENABLED (${mss_rules} kernel hooks active)${NC}"
@@ -5525,7 +5635,7 @@ run_cover_watchdog() {
             fi
             ;;
         *)
-            log_error "Usage: mtproxymax cover-watchdog [test|auto]"
+            log_error "Usage: mtproxywidum cover-watchdog [test|auto]"
             return 1
             ;;
     esac
@@ -5561,7 +5671,7 @@ run_lockdown() {
             echo -e "  ${BOLD}Emergency Lockdown Mode:${NC} $([ "${LOCKDOWN_MODE:-false}" = "true" ] && echo "${RED}${BOLD}ACTIVE${NC}" || echo "${GREEN}INACTIVE${NC}")"
             ;;
         *)
-            log_error "Usage: mtproxymax lockdown [on|off|status]"
+            log_error "Usage: mtproxywidum lockdown [on|off|status]"
             return 1
             ;;
     esac
@@ -5574,7 +5684,7 @@ run_port_pool() {
         add)
             check_root
             local port="$2"
-            [ -z "$port" ] && { log_error "Usage: mtproxymax port-pool add <port>"; return 1; }
+            [ -z "$port" ] && { log_error "Usage: mtproxywidum port-pool add <port>"; return 1; }
             [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ] || { log_error "Invalid port number"; return 1; }
             load_settings
             if [[ ",${PORT_POOL_PORTS}," == *",${port},"* ]] || [ "$port" = "$PROXY_PORT" ]; then
@@ -5591,7 +5701,7 @@ run_port_pool() {
         remove)
             check_root
             local port="$2"
-            [ -z "$port" ] && { log_error "Usage: mtproxymax port-pool remove <port>"; return 1; }
+            [ -z "$port" ] && { log_error "Usage: mtproxywidum port-pool remove <port>"; return 1; }
             load_settings
             # Remove port from comma-delimited string
             local -a new_ports=()
@@ -5612,10 +5722,10 @@ run_port_pool() {
             load_settings
             echo -e "  ${BOLD}Primary Engine Port:${NC} ${GREEN}${PROXY_PORT:-443}${NC}"
             echo -e "  ${BOLD}Secondary Port Pool:${NC} ${CYAN}${PORT_POOL_PORTS:-none}${NC}"
-            echo -e "  ${DIM}Usage: mtproxymax port-pool [add|remove] <port>${NC}"
+            echo -e "  ${DIM}Usage: mtproxywidum port-pool [add|remove] <port>${NC}"
             ;;
         *)
-            log_error "Usage: mtproxymax port-pool [add|remove|list]"
+            log_error "Usage: mtproxywidum port-pool [add|remove|list]"
             return 1
             ;;
     esac
@@ -5690,7 +5800,7 @@ run_qos() {
         set)
             check_root
             local mbps="$2"
-            [ -z "$mbps" ] && { log_error "Usage: mtproxymax qos set <mbps>"; return 1; }
+            [ -z "$mbps" ] && { log_error "Usage: mtproxywidum qos set <mbps>"; return 1; }
             [[ "$mbps" =~ ^[0-9]+$ ]] && [ "$mbps" -ge 1 ] && [ "$mbps" -le 10000 ] || { log_error "Invalid speed limit (1-10000 Mbps)"; return 1; }
             load_settings
             QOS_LIMIT_MBPS="$mbps"
@@ -5714,10 +5824,10 @@ run_qos() {
             else
                 echo -e "     Status:      ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  ${DIM}Usage: mtproxymax qos [set <mbps>|off|status]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum qos [set <mbps>|off|status]${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax qos [set <mbps>|off|status]"
+            log_error "Usage: mtproxywidum qos [set <mbps>|off|status]"
             return 1
             ;;
     esac
@@ -5729,7 +5839,7 @@ run_happy_hours() {
         set)
             check_root
             local win="$2"
-            [ -z "$win" ] && { log_error "Usage: mtproxymax happy-hours set <HH:MM-HH:MM> (e.g. 02:00-08:00)"; return 1; }
+            [ -z "$win" ] && { log_error "Usage: mtproxywidum happy-hours set <HH:MM-HH:MM> (e.g. 02:00-08:00)"; return 1; }
             if ! validate_happy_hours_win "$win"; then
                 log_error "Invalid time window format or out-of-range time. Use HH:MM-HH:MM (24h format, 00:00-23:59, e.g. 02:00-08:00)"
                 return 1
@@ -5758,10 +5868,10 @@ run_happy_hours() {
             else
                 echo -e "     Status:            ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  ${DIM}Usage: mtproxymax happy-hours [set <HH:MM-HH:MM>|off|status]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum happy-hours [set <HH:MM-HH:MM>|off|status]${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax happy-hours [set <HH:MM-HH:MM>|off|status]"
+            log_error "Usage: mtproxywidum happy-hours [set <HH:MM-HH:MM>|off|status]"
             return 1
             ;;
     esac
@@ -5793,12 +5903,12 @@ run_quota_mode() {
             if [ "$cur_mode" = "engine" ]; then
                 echo -e "     Current Mode: ${YELLOW}engine${NC} (Strict C/Rust engine quota in config.toml; restarts on reset)"
             else
-                echo -e "     Current Mode: ${GREEN}${BOLD}manager${NC} (Smooth MTProxyMax periodic enforcement; 0-disconnect resets)"
+                echo -e "     Current Mode: ${GREEN}${BOLD}manager${NC} (Smooth MTProxyWidum periodic enforcement; 0-disconnect resets)"
             fi
-            echo -e "  ${DIM}Usage: mtproxymax quota-mode [manager|engine|status]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum quota-mode [manager|engine|status]${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax quota-mode [manager|engine|status]"
+            log_error "Usage: mtproxywidum quota-mode [manager|engine|status]"
             return 1
             ;;
     esac
@@ -5886,7 +5996,7 @@ run_abuse_watch() {
 
 run_broadcast() {
     local msg="$1"
-    [ -z "$msg" ] && { log_error "Usage: mtproxymax broadcast <message>"; return 1; }
+    [ -z "$msg" ] && { log_error "Usage: mtproxywidum broadcast <message>"; return 1; }
     load_settings
     if [ "${TELEGRAM_ENABLED:-false}" != "true" ] || [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
         log_error "Telegram bot notifications are not enabled or configured (TELEGRAM_CHAT_ID missing)."
@@ -5925,22 +6035,22 @@ frontend ft_mtproxy
     mode tcp
     option tcplog
     timeout client 1h
-    default_backend bk_mtproxymax
+    default_backend bk_mtproxywidum
 EOF
         if [ "${SSL_ENABLED:-false}" = "true" ] && [ -n "${SSL_DOMAIN:-}" ]; then
             cat <<EOF
 
-# Optional: TLS Termination using MTProxyMax SSL Shield certificate
+# Optional: TLS Termination using MTProxyWidum SSL Shield certificate
 # frontend ft_mtproxy_ssl
 #     bind *:8443 ssl crt ${SSL_DIR}/${SSL_DOMAIN}.crt
 #     mode tcp
-#     default_backend bk_mtproxymax
+#     default_backend bk_mtproxywidum
 EOF
         fi
         cat <<EOF
 
-# Backend routing to local MTProxyMax instance
-backend bk_mtproxymax
+# Backend routing to local MTProxyWidum instance
+backend bk_mtproxywidum
     mode tcp
     timeout server 1h
     timeout connect 5s
@@ -5954,13 +6064,13 @@ EOF
         [ "${PROXY_PROTOCOL:-false}" = "true" ] && proxy_protocol_line="        proxy_protocol on;"
         cat <<EOF
 stream {
-    upstream mtproxymax_backend {
+    upstream mtproxywidum_backend {
         server 127.0.0.1:${port};
     }
 
     server {
         listen ${port};
-        proxy_pass mtproxymax_backend;
+        proxy_pass mtproxywidum_backend;
         proxy_timeout 1h;
         proxy_connect_timeout 5s;
 ${proxy_protocol_line}
@@ -5969,12 +6079,12 @@ EOF
         if [ "${SSL_ENABLED:-false}" = "true" ] && [ -n "${SSL_DOMAIN:-}" ]; then
             cat <<EOF
 
-    # Optional: TLS Termination using MTProxyMax SSL Shield
+    # Optional: TLS Termination using MTProxyWidum SSL Shield
     # server {
     #     listen 8443 ssl;
     #     ssl_certificate ${SSL_DIR}/${SSL_DOMAIN}.crt;
     #     ssl_certificate_key ${SSL_DIR}/${SSL_DOMAIN}.key;
-    #     proxy_pass mtproxymax_backend;
+    #     proxy_pass mtproxywidum_backend;
     # }
 EOF
         fi
@@ -5991,7 +6101,7 @@ run_ddns() {
         set)
             check_root
             local token="$2" zone="$3" record="$4"
-            [ -z "$token" ] || [ -z "$zone" ] || [ -z "$record" ] && { log_error "Usage: mtproxymax ddns set <cf_api_token> <zone_id> <record_name>"; return 1; }
+            [ -z "$token" ] || [ -z "$zone" ] || [ -z "$record" ] && { log_error "Usage: mtproxywidum ddns set <cf_api_token> <zone_id> <record_name>"; return 1; }
             load_settings
             DDNS_ENABLED="true"
             DDNS_CF_TOKEN="$token"
@@ -6004,7 +6114,7 @@ run_ddns() {
         run|update)
             load_settings
             if [ "${DDNS_ENABLED:-false}" != "true" ] || [ -z "${DDNS_CF_TOKEN:-}" ]; then
-                log_error "DDNS is not enabled or configured. Run: mtproxymax ddns set <token> <zone_id> <record_name>"
+                log_error "DDNS is not enabled or configured. Run: mtproxywidum ddns set <token> <zone_id> <record_name>"
                 return 1
             fi
             local cur_ip
@@ -6058,10 +6168,10 @@ run_ddns() {
             else
                 echo -e "     Status:      ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  ${DIM}Usage: mtproxymax ddns [set <token> <zone_id> <record_name>|run|off|status]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum ddns [set <token> <zone_id> <record_name>|run|off|status]${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax ddns [set <token> <zone_id> <record_name>|run|off|status]"
+            log_error "Usage: mtproxywidum ddns [set <token> <zone_id> <record_name>|run|off|status]"
             return 1
             ;;
     esac
@@ -6071,7 +6181,7 @@ run_diag_dump() {
     check_root
     load_settings
     echo -e "\n  ── 🏥 ${BOLD}System Diagnostic Forensics Dump${NC} ──\n"
-    local dump_dir; dump_dir=$(mktemp -d "/tmp/mtproxymax_diag_XXXXXX") || return 1
+    local dump_dir; dump_dir=$(mktemp -d "/tmp/mtproxywidum_diag_XXXXXX") || return 1
     chmod 700 "$dump_dir" 2>/dev/null || true
     _TEMP_FILES+=("$dump_dir")
     
@@ -6100,7 +6210,7 @@ run_diag_dump() {
         sed 's/TELEGRAM_BOT_TOKEN=.*/TELEGRAM_BOT_TOKEN="[REDACTED]"/' "$SETTINGS_FILE" > "${dump_dir}/settings.conf" 2>/dev/null || true
     fi
     
-    local tar_path="$(get_export_dir)/mtproxymax_diag_$(date +%Y%m%d_%H%M%S).tar.gz"
+    local tar_path="$(get_export_dir)/mtproxywidum_diag_$(date +%Y%m%d_%H%M%S).tar.gz"
     tar -czf "$tar_path" -C /tmp "$(basename "$dump_dir")" 2>/dev/null && rm -rf "$dump_dir"
     chmod 600 "$tar_path" 2>/dev/null || true
     log_success "Diagnostic archive created at: ${CYAN}${tar_path}${NC}"
@@ -6134,12 +6244,12 @@ run_snapshot() {
                 ls -lh "$snap_dir" | awk 'NR>1 {print "  " $9 " (" $5 ", created " $6 " " $7 " " $8 ")"}'
                 echo ""
             fi
-            echo -e "  ${DIM}Usage: mtproxymax snapshot [create <name>|restore <name>|list]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum snapshot [create <name>|restore <name>|list]${NC}\n"
             ;;
         restore)
             check_root
             local name="$2"
-            [ -z "$name" ] && { log_error "Usage: mtproxymax snapshot restore <name>"; return 1; }
+            [ -z "$name" ] && { log_error "Usage: mtproxywidum snapshot restore <name>"; return 1; }
             local target="${snap_dir}/${name}"
             [[ "$name" != *.tar.gz ]] && target="${snap_dir}/${name}.tar.gz"
             if [ ! -f "$target" ]; then
@@ -6153,7 +6263,7 @@ run_snapshot() {
             reload_proxy_config
             ;;
         *)
-            log_error "Usage: mtproxymax snapshot [create <name>|restore <name>|list]"
+            log_error "Usage: mtproxywidum snapshot [create <name>|restore <name>|list]"
             return 1
             ;;
     esac
@@ -6176,7 +6286,7 @@ run_top() {
         local mem_str; mem_str=$(free -m 2>/dev/null | awk '/^Mem:/ {printf "%dMB / %dMB (%.0f%%)", $3, $2, $3/$2*100}' || awk '/^MemTotal:/ {t=$2} /^MemAvailable:/ {a=$2} END {if(t>0) printf "%dMB / %dMB (%.0f%%)", (t-a)/1024, t/1024, (t-a)/t*100}' /proc/meminfo 2>/dev/null || echo "unknown")
         
         echo -e "${BOLD}╔══════════════════════════════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${BOLD}║          🚀 MTProxyMax Live Terminal Radar — Anti-DPI Traffic Leaderboard            ║${NC}"
+        echo -e "${BOLD}║          🚀 MTProxyWidum Live Terminal Radar — Anti-DPI Traffic Leaderboard            ║${NC}"
         echo -e "${BOLD}╚══════════════════════════════════════════════════════════════════════════════════════╝${NC}"
         echo -e "  ${BOLD}Uptime:${NC} ${CYAN}${up_str}${NC}   |   ${BOLD}Load:${NC} ${YELLOW}${load_str}${NC}   |   ${BOLD}RAM:${NC} ${GREEN}${mem_str}${NC}"
         echo -e "  ${BOLD}Proxy Port:${NC} ${CYAN}${PROXY_PORT:-443}${NC}   |   ${BOLD}Cover Domain:${NC} ${CYAN}${PROXY_DOMAIN:-none}${NC}"
@@ -6244,8 +6354,8 @@ run_tag() {
             [ "${SECRETS_ENABLED[$i]}" = "false" ] && st="${RED}DISABLED${NC}"
             printf "  %-20s %-20b %-35s\n" "${SECRETS_LABELS[$i]}" "$st" "${SECRETS_NOTES[$i]:-${DIM}none${NC}}"
         done
-        echo -e "\n  ${DIM}Usage: mtproxymax tag <label> <tag/note text>${NC}"
-        echo -e "  ${DIM}       mtproxymax tag <label> clear${NC}\n"
+        echo -e "\n  ${DIM}Usage: mtproxywidum tag <label> <tag/note text>${NC}"
+        echo -e "  ${DIM}       mtproxywidum tag <label> clear${NC}\n"
         return 0
     fi
     if [ "$tag_str" = "clear" ] || [ "$tag_str" = "remove" ]; then
@@ -6282,7 +6392,7 @@ run_export_client() {
         case "${format,,}" in
             clash)
                 echo "  proxies:"
-                echo "    - name: \"MTProxyMax - ${label}\""
+                echo "    - name: \"MTProxyWidum - ${label}\""
                 echo "      type: mtproto"
                 echo "      server: \"${ip}\""
                 echo "      port: ${port}"
@@ -6291,7 +6401,7 @@ run_export_client() {
             singbox|sing-box)
                 echo "  {"
                 echo "    \"type\": \"mtproto\","
-                echo "    \"tag\": \"MTProxyMax-${label}\","
+                echo "    \"tag\": \"MTProxyWidum-${label}\","
                 echo "    \"server\": \"${ip}\","
                 echo "    \"server_port\": ${port},"
                 echo "    \"secret\": \"${sec}\""
@@ -6303,7 +6413,7 @@ run_export_client() {
         esac
         echo ""
     done
-    echo -e "  ${DIM}Usage: mtproxymax export-client [label|all] [clash|singbox|tg]${NC}\n"
+    echo -e "  ${DIM}Usage: mtproxywidum export-client [label|all] [clash|singbox|tg]${NC}\n"
 }
 
 run_export_report() {
@@ -6313,7 +6423,7 @@ run_export_report() {
     load_secrets
     
     local date_str; date_str=$(date +%Y%m%d_%H%M%S)
-    [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxymax_report_${date_str}.${format}"
+    [ -z "$outfile" ] && outfile="$(get_export_dir)/mtproxywidum_report_${date_str}.${format}"
     mkdir -p "$(dirname "$outfile")" 2>/dev/null || true
     
     local count=${#SECRETS_LABELS[@]}
@@ -6339,7 +6449,7 @@ run_export_report() {
 <html>
 <head>
 <meta charset="utf-8">
-<title>MTProxyMax Executive Report</title>
+<title>MTProxyWidum Executive Report</title>
 <style>
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 40px; }
 h1 { color: #38bdf8; border-bottom: 2px solid #334155; padding-bottom: 10px; }
@@ -6352,7 +6462,7 @@ tr:hover { background: #334155; }
 </style>
 </head>
 <body>
-<h1>🛡️ MTProxyMax Executive Usage Report</h1>
+<h1>🛡️ MTProxyWidum Executive Usage Report</h1>
 <p>Generated on: <strong>$(date)</strong></p>
 <table>
 <tr><th>User Label</th><th>Status</th><th>Quota Limit</th><th>Data Used</th><th>Tags / Notes</th></tr>
@@ -6377,7 +6487,7 @@ EOF
 }
 
 run_qr_sheet() {
-    local outfile="${1:-$(get_export_dir)/mtproxymax_vouchers.html}"
+    local outfile="${1:-$(get_export_dir)/mtproxywidum_vouchers.html}"
     mkdir -p "$(dirname "$outfile")" 2>/dev/null || true
     load_settings
     load_secrets
@@ -6396,7 +6506,7 @@ run_qr_sheet() {
 <html>
 <head>
 <meta charset="utf-8">
-<title>MTProxyMax Voucher Cards</title>
+<title>MTProxyWidum Voucher Cards</title>
 <style>
 body { font-family: sans-serif; background: #f1f5f9; padding: 20px; }
 .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
@@ -6408,7 +6518,7 @@ body { font-family: sans-serif; background: #f1f5f9; padding: 20px; }
 </style>
 </head>
 <body>
-<h1 style="text-align: center; color: #0f172a;">🎟️ MTProxyMax Proxy Access Vouchers</h1>
+<h1 style="text-align: center; color: #0f172a;">🎟️ MTProxyWidum Proxy Access Vouchers</h1>
 <div class="grid">
 EOF
 
@@ -6491,7 +6601,7 @@ run_traffic_reset_global() {
 run_guest() {
     local guest_label="${1:-}"
     local limit_str="${2:-24h}"
-    [ -z "$guest_label" ] && { echo -e "\n  ── ⌛ ${BOLD}Disposable Burner / Guest Links${NC} ──\n\n  ${DIM}Usage: mtproxymax guest <label> <24h|7d|500mb|1gb>${NC}\n"; return 1; }
+    [ -z "$guest_label" ] && { echo -e "\n  ── ⌛ ${BOLD}Disposable Burner / Guest Links${NC} ──\n\n  ${DIM}Usage: mtproxywidum guest <label> <24h|7d|500mb|1gb>${NC}\n"; return 1; }
     
     check_root
     load_settings
@@ -6539,8 +6649,8 @@ run_pool() {
             echo -e "\n  ── 👥 ${BOLD}Shared Quota Pools (Family / Team Plans)${NC} ──\n"
             if [ ! -s "$pool_file" ]; then
                 echo -e "  ${DIM}No shared quota pools configured.${NC}\n"
-                echo -e "  ${DIM}Usage: mtproxymax pool create <pool_name> <limit_mb/gb> [notes]${NC}"
-                echo -e "  ${DIM}       mtproxymax pool add <pool_name> <member_label1,label2>${NC}\n"
+                echo -e "  ${DIM}Usage: mtproxywidum pool create <pool_name> <limit_mb/gb> [notes]${NC}"
+                echo -e "  ${DIM}       mtproxywidum pool add <pool_name> <member_label1,label2>${NC}\n"
                 return 0
             fi
             load_secrets
@@ -6572,12 +6682,12 @@ run_pool() {
                 printf "  %-16s %-14s %-16s %-25s %-20s\n" "$p_name" "$lim_fmt" "$comb_fmt" "${p_members:-none}" "$bar"
             done < "$pool_file"
             echo "  ─────────────────────────────────────────────────────────────────────────────────────────────"
-            echo -e "  ${DIM}Usage: mtproxymax pool [create|add|remove|delete|list]${NC}\n"
+            echo -e "  ${DIM}Usage: mtproxywidum pool [create|add|remove|delete|list]${NC}\n"
             ;;
         create)
             check_root
             local p_name="$2" p_limit_str="${3:-0}" p_notes="${4:-}"
-            [ -z "$p_name" ] && { log_error "Usage: mtproxymax pool create <pool_name> <limit_mb/gb>"; return 1; }
+            [ -z "$p_name" ] && { log_error "Usage: mtproxywidum pool create <pool_name> <limit_mb/gb>"; return 1; }
             local p_limit=0
             [ "$p_limit_str" != "0" ] && p_limit=$(parse_human_bytes "$p_limit_str")
             awk -v p="$p_name" -F'|' '$1 != p' "$pool_file" > "${pool_file}.tmp" 2>/dev/null || true
@@ -6588,7 +6698,7 @@ run_pool() {
         add|attach)
             check_root
             local p_name="$2" new_mems="$3"
-            [ -z "$p_name" ] || [ -z "$new_mems" ] && { log_error "Usage: mtproxymax pool add <pool_name> <label1,label2>"; return 1; }
+            [ -z "$p_name" ] || [ -z "$new_mems" ] && { log_error "Usage: mtproxywidum pool add <pool_name> <label1,label2>"; return 1; }
             if ! awk -v p="$p_name" -F'|' '$1 == p {found=1} END {exit !found}' "$pool_file" 2>/dev/null; then
                 log_error "Pool '${p_name}' not found."
                 return 1
@@ -6608,13 +6718,13 @@ run_pool() {
         delete|remove)
             check_root
             local p_name="$2"
-            [ -z "$p_name" ] && { log_error "Usage: mtproxymax pool delete <pool_name>"; return 1; }
+            [ -z "$p_name" ] && { log_error "Usage: mtproxywidum pool delete <pool_name>"; return 1; }
             awk -v p="$p_name" -F'|' '$1 != p' "$pool_file" > "${pool_file}.tmp" 2>/dev/null || true
             mv "${pool_file}.tmp" "$pool_file" && chmod 600 "$pool_file"
             log_success "Pool '${p_name}' deleted."
             ;;
         *)
-            log_error "Usage: mtproxymax pool [create|add|delete|list]"
+            log_error "Usage: mtproxywidum pool [create|add|delete|list]"
             return 1
             ;;
     esac
@@ -6636,7 +6746,7 @@ run_calendar() {
             
             echo -e "  ${BOLD}[1] Weekend Free Pass:${NC}  ${wp_st}"
             echo -e "  ${BOLD}[2] Holiday Bonus Pool:${NC} ${hb_st}"
-            echo -e "\n  ${DIM}Usage: mtproxymax calendar [weekend-pass <on|off> | holiday-bonus <on|off> | status]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum calendar [weekend-pass <on|off> | holiday-bonus <on|off> | status]${NC}\n"
             ;;
         weekend-pass|wp)
             check_root
@@ -6663,7 +6773,7 @@ run_calendar() {
             log_success "All calendar promotional rules disabled."
             ;;
         *)
-            log_error "Usage: mtproxymax calendar [weekend-pass|holiday-bonus|status|off]"
+            log_error "Usage: mtproxywidum calendar [weekend-pass|holiday-bonus|status|off]"
             return 1
             ;;
     esac
@@ -6694,12 +6804,12 @@ run_geo_fence() {
             
             echo -e "  ${BOLD}Status:${NC}          ${st}"
             echo -e "  ${BOLD}Active Rules:${NC}    $([ "$mode" != "off" ] && echo "Country CIDRs enforced via kernel iptables / ipset" || echo "None")"
-            echo -e "\n  ${DIM}Usage: mtproxymax geofence [allow|block|status|off] <country_codes, e.g. IR,RU,CN>${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum geofence [allow|block|status|off] <country_codes, e.g. IR,RU,CN>${NC}\n"
             ;;
         allow|whitelist)
             check_root
             local cc="${2:-}"
-            [ -z "$cc" ] && { log_error "Usage: mtproxymax geofence allow <US,GB,DE>"; return 1; }
+            [ -z "$cc" ] && { log_error "Usage: mtproxywidum geofence allow <US,GB,DE>"; return 1; }
             cc=$(echo "$cc" | tr -dc 'a-zA-Z0-9,')
             echo "mode=\"allow\"" > "$geo_file"
             echo "countries=\"${cc,,}\"" >> "$geo_file"
@@ -6709,7 +6819,7 @@ run_geo_fence() {
         block|blacklist)
             check_root
             local cc="${2:-}"
-            [ -z "$cc" ] && { log_error "Usage: mtproxymax geofence block <CN,RU,IR>"; return 1; }
+            [ -z "$cc" ] && { log_error "Usage: mtproxywidum geofence block <CN,RU,IR>"; return 1; }
             cc=$(echo "$cc" | tr -dc 'a-zA-Z0-9,')
             echo "mode=\"block\"" > "$geo_file"
             echo "countries=\"${cc,,}\"" >> "$geo_file"
@@ -6724,7 +6834,7 @@ run_geo_fence() {
             log_success "Geo-Fence country filtering disabled."
             ;;
         *)
-            log_error "Usage: mtproxymax geofence [allow|block|status|off] <country_codes>"
+            log_error "Usage: mtproxywidum geofence [allow|block|status|off] <country_codes>"
             return 1
             ;;
     esac
@@ -6751,7 +6861,7 @@ run_decoy_web() {
             echo -e "  ${BOLD}Status:${NC}        ${st}"
             echo -e "  ${BOLD}Theme:${NC}         ${d_tmpl^} Computing & Infrastructure"
             echo -e "  ${BOLD}HTTP Port:${NC}     ${d_port}"
-            echo -e "\n  ${DIM}Usage: mtproxymax decoy [setup|status|off] [cloud|blog|consulting]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum decoy [setup|status|off] [cloud|blog|consulting]${NC}\n"
             ;;
         setup|on|enable)
             check_root
@@ -6770,7 +6880,7 @@ run_decoy_web() {
             log_success "Decoy camouflage web server disabled."
             ;;
         *)
-            log_error "Usage: mtproxymax decoy [setup|status|off] [cloud|blog|consulting]"
+            log_error "Usage: mtproxywidum decoy [setup|status|off] [cloud|blog|consulting]"
             return 1
             ;;
     esac
@@ -6807,7 +6917,7 @@ run_auto_sni() {
             echo "  ──────────────────────────────────────────────────────────────────────────────────"
             if [ -n "$best_dom" ]; then
                 echo -e "\n  🏆 ${BOLD}Recommended Cover Domain:${NC} ${GREEN}${best_dom}${NC} (${best_time}ms TLS handshake)"
-                echo -e "  ${DIM}To apply automatically, run: mtproxymax auto-sni apply${NC}\n"
+                echo -e "  ${DIM}To apply automatically, run: mtproxywidum auto-sni apply${NC}\n"
             fi
             ;;
         apply|rotate)
@@ -6834,10 +6944,10 @@ run_auto_sni() {
             load_settings
             echo -e "\n  ── 🔬 ${BOLD}Smart SNI Cover Domain Status${NC} ──\n"
             echo -e "  ${BOLD}Current Cover Domain:${NC} ${CYAN}${PROXY_DOMAIN:-none}${NC}"
-            echo -e "  ${DIM}Run 'mtproxymax auto-sni test' to benchmark alternative domains.${NC}\n"
+            echo -e "  ${DIM}Run 'mtproxywidum auto-sni test' to benchmark alternative domains.${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax auto-sni [test|apply|status]"
+            log_error "Usage: mtproxywidum auto-sni [test|apply|status]"
             return 1
             ;;
     esac
@@ -6888,10 +6998,10 @@ run_dc_optimize() {
             echo -e "\n  ── ⚡ ${BOLD}Telegram Datacenter Route Optimization Status${NC} ──\n"
             echo -e "  ${BOLD}TCP Fast Open:${NC}       $([ "$(sysctl -n net.ipv4.tcp_fastopen 2>/dev/null || echo 0)" -ge 1 ] && echo "${GREEN}ENABLED${NC}" || echo "${YELLOW}DISABLED${NC}")"
             echo -e "  ${BOLD}Slow Start Idle:${NC}     $([ "$(sysctl -n net.ipv4.tcp_slow_start_after_idle 2>/dev/null || echo 1)" -eq 0 ] && echo "${GREEN}OPTIMIZED (0)${NC}" || echo "${YELLOW}DEFAULT${NC}")"
-            echo -e "\n  ${DIM}Run 'mtproxymax dc-optimize benchmark' to test live DC ping times.${NC}\n"
+            echo -e "\n  ${DIM}Run 'mtproxywidum dc-optimize benchmark' to test live DC ping times.${NC}\n"
             ;;
         *)
-            log_error "Usage: mtproxymax dc-optimize [benchmark|apply|status]"
+            log_error "Usage: mtproxywidum dc-optimize [benchmark|apply|status]"
             return 1
             ;;
     esac
@@ -6941,7 +7051,7 @@ run_ip_score() {
             fi
             ;;
         *)
-            log_error "Usage: mtproxymax ip-score [check|status]"
+            log_error "Usage: mtproxywidum ip-score [check|status]"
             return 1
             ;;
     esac
@@ -6996,12 +7106,12 @@ run_webhooks() {
             else
                 echo -e "    ${DIM}None${NC}"
             fi
-            echo -e "\n  ${DIM}Usage: mtproxymax webhook [add|remove|list|test] [url]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum webhook [add|remove|list|test] [url]${NC}\n"
             ;;
         add)
             check_root
             local url="${2:-}"
-            [ -z "$url" ] && { log_error "Usage: mtproxymax webhook add <https://discord.com/api/webhooks/...>"; return 1; }
+            [ -z "$url" ] && { log_error "Usage: mtproxywidum webhook add <https://discord.com/api/webhooks/...>"; return 1; }
             if grep -q -F "$url" "$wh_file" 2>/dev/null; then
                 log_info "Webhook URL already registered."
             else
@@ -7013,7 +7123,7 @@ run_webhooks() {
         remove|del)
             check_root
             local url="${2:-}"
-            [ -z "$url" ] && { log_error "Usage: mtproxymax webhook remove <url>"; return 1; }
+            [ -z "$url" ] && { log_error "Usage: mtproxywidum webhook remove <url>"; return 1; }
             grep -v -F "$url" "$wh_file" > "${wh_file}.tmp" 2>/dev/null || true
             mv "${wh_file}.tmp" "$wh_file" && chmod 600 "$wh_file"
             log_success "Removed webhook endpoint."
@@ -7023,11 +7133,11 @@ run_webhooks() {
             ;;
         test)
             log_info "Dispatching test notification to all registered webhooks..."
-            webhook_send "🚨 MTProxyMax Test Notification: Enterprise Webhook Dispatcher is operational!"
+            webhook_send "🚨 MTProxyWidum Test Notification: Enterprise Webhook Dispatcher is operational!"
             log_success "Test event dispatched!"
             ;;
         *)
-            log_error "Usage: mtproxymax webhook [add|remove|list|test] [url]"
+            log_error "Usage: mtproxywidum webhook [add|remove|list|test] [url]"
             return 1
             ;;
     esac
@@ -7053,7 +7163,7 @@ run_auto_failover() {
             echo -e "  ${BOLD}Status:${NC}        ${st}"
             echo -e "  ${BOLD}Check Policy:${NC}  3 consecutive health ping failures triggers failover"
             echo -e "  ${BOLD}Action:${NC}        Automatically switch active upstream / rotate backend IP"
-            echo -e "\n  ${DIM}Usage: mtproxymax failover [on|off|status]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum failover [on|off|status]${NC}\n"
             ;;
         on|enable)
             check_root
@@ -7069,7 +7179,7 @@ run_auto_failover() {
             log_success "Autonomous Upstream Failover disabled."
             ;;
         *)
-            log_error "Usage: mtproxymax failover [on|off|status]"
+            log_error "Usage: mtproxywidum failover [on|off|status]"
             return 1
             ;;
     esac
@@ -7094,7 +7204,7 @@ run_eco_mode() {
             echo -e "  ${BOLD}Status:${NC}          ${st}"
             echo -e "  ${BOLD}Target Footprint:${NC} < 128MB RAM usage (ideal for 256MB/512MB VPS)"
             echo -e "  ${BOLD}Buffer Policy:${NC}   Conservative TCP memory allocation & worker pruning"
-            echo -e "\n  ${DIM}Usage: mtproxymax eco-mode [on|off|status]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum eco-mode [on|off|status]${NC}\n"
             ;;
         on|enable)
             check_root
@@ -7113,7 +7223,7 @@ run_eco_mode() {
             log_success "Eco-Mode disabled. Standard performance buffers restored."
             ;;
         *)
-            log_error "Usage: mtproxymax eco-mode [on|off|status]"
+            log_error "Usage: mtproxywidum eco-mode [on|off|status]"
             return 1
             ;;
     esac
@@ -7130,7 +7240,7 @@ run_chaos_test() {
             fi
             echo -e "  ${BOLD}Status:${NC}        ${st}"
             echo -e "  ${BOLD}Capabilities:${NC}  Simulate 5%% packet loss or +100ms jitter on local loopback"
-            echo -e "\n  ${DIM}Usage: mtproxymax chaos-test [drop|latency|restore|status]${NC}\n"
+            echo -e "\n  ${DIM}Usage: mtproxywidum chaos-test [drop|latency|restore|status]${NC}\n"
             ;;
         drop|loss)
             check_root
@@ -7160,7 +7270,7 @@ run_chaos_test() {
             log_success "Restored network interface to pristine condition. All chaos faults removed!"
             ;;
         *)
-            log_error "Usage: mtproxymax chaos-test [drop|latency|restore|status]"
+            log_error "Usage: mtproxywidum chaos-test [drop|latency|restore|status]"
             return 1
             ;;
     esac
@@ -7177,20 +7287,20 @@ run_evacuate() {
         echo -e "  ${BOLD}Emergency Evacuation Bundle Generator${NC}"
         log_info "Creating encrypted portable backup archive of all secrets, pools, and configs..."
         mkdir -p "${INSTALL_DIR}/evacuation" 2>/dev/null || true
-        local evac_file="${INSTALL_DIR}/evacuation/mtproxymax_evac_$(date +%Y%m%d_%H%M%S).tar.gz"
+        local evac_file="${INSTALL_DIR}/evacuation/mtproxywidum_evac_$(date +%Y%m%d_%H%M%S).tar.gz"
         if [ ${#conf_files[@]} -gt 0 ]; then
             tar -czf "$evac_file" -C "$INSTALL_DIR" "${conf_files[@]}" 2>/dev/null || true
         fi
         echo ""
         log_success "Evacuation archive generated: ${CYAN}${evac_file}${NC}"
-        echo -e "  ${DIM}To import on new VPS, copy this archive and run: tar -xzf <archive> -C /opt/mtproxymax${NC}\n"
-        echo -e "  ${BOLD}Usage for direct SCP transfer:${NC} mtproxymax evacuate <target_vps_ip> [user]${NC}\n"
+        echo -e "  ${DIM}To import on new VPS, copy this archive and run: tar -xzf <archive> -C /opt/mtproxywidum${NC}\n"
+        echo -e "  ${BOLD}Usage for direct SCP transfer:${NC} mtproxywidum evacuate <target_vps_ip> [user]${NC}\n"
     else
         check_root
         log_info "Initiating direct emergency SSH transfer to ${target_user}@${target_ip}..."
         if command -v scp >/dev/null 2>&1; then
             mkdir -p "${INSTALL_DIR}/evacuation" 2>/dev/null || true
-            local evac_file="${INSTALL_DIR}/evacuation/mtproxymax_evac_$(date +%Y%m%d_%H%M%S).tar.gz"
+            local evac_file="${INSTALL_DIR}/evacuation/mtproxywidum_evac_$(date +%Y%m%d_%H%M%S).tar.gz"
             if [ ${#conf_files[@]} -gt 0 ]; then
                 tar -czf "$evac_file" -C "$INSTALL_DIR" "${conf_files[@]}" 2>/dev/null || true
             fi
@@ -7208,14 +7318,14 @@ run_evacuate() {
 run_backup_send_tg() {
     load_settings
     if [ "${TELEGRAM_ENABLED:-false}" != "true" ] || [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
-        log_error "Telegram bot is not configured or disabled. Run: mtproxymax telegram setup"
+        log_error "Telegram bot is not configured or disabled. Run: mtproxywidum telegram setup"
         return 1
     fi
     local target_file="${1:-}"
     if [ -z "$target_file" ]; then
         log_info "Creating fresh backup before sending to Telegram..."
         create_backup >/dev/null 2>&1
-        target_file=$(ls -t "${BACKUP_DIR:-${INSTALL_DIR}/backups}"/mtproxymax-*.tar.gz* 2>/dev/null | head -1)
+        target_file=$(ls -t "${BACKUP_DIR:-${INSTALL_DIR}/backups}"/mtproxywidum-*.tar.gz* 2>/dev/null | head -1)
     fi
     if [ -z "$target_file" ] || [ ! -f "$target_file" ]; then
         log_error "Backup file not found: ${target_file}"
@@ -7223,7 +7333,7 @@ run_backup_send_tg() {
     fi
     log_info "Sending backup archive (${target_file}) to Telegram admin chat..."
     local res
-    res=$(curl -s --max-time 60 -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@${target_file}" -F "caption=📦 MTProxyMax Server Backup (${SCRIPT_NAME} v${VERSION})" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument")
+    res=$(curl -s --max-time 60 -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@${target_file}" -F "caption=📦 MTProxyWidum Server Backup (${SCRIPT_NAME} v${VERSION})" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument")
     if echo "$res" | grep -q '"ok":true'; then
         log_success "Backup archive successfully dispatched to Telegram chat!"
     else
@@ -7268,7 +7378,7 @@ run_daily_report() {
             local score=100
             if [ "${STEALTH_SHIELD:-false}" != "true" ]; then score=$((score - 20)); fi
             if [ "${STEALTH_PRESET:-normal}" != "ultra" ]; then score=$((score - 20)); fi
-            local msg="☀️ *MTProxyMax Daily Briefing*\n\n"
+            local msg="☀️ *MTProxyWidum Daily Briefing*\n\n"
             msg+="📈 *Status:* ${uptime_str}\n"
             msg+="👥 *Users:* ${active_users} active (${total_users} total)\n"
             msg+="🛡️ *Anti-DPI Score:* ${score}/100\n"
@@ -7294,10 +7404,10 @@ run_daily_report() {
             else
                 echo -e "     Status:    ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  Usage: mtproxymax daily-report [on <HH:MM>|off|run|status]\n"
+            echo -e "  Usage: mtproxywidum daily-report [on <HH:MM>|off|run|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax daily-report [on <HH:MM>|off|run|status]"
+            log_error "Usage: mtproxywidum daily-report [on <HH:MM>|off|run|status]"
             return 1
             ;;
     esac
@@ -7326,7 +7436,7 @@ run_ssh_shield() {
                         log_target="backend = systemd"
                     fi
                 fi
-                cat <<F2B > /etc/fail2ban/jail.d/mtproxymax-ssh.conf
+                cat <<F2B > /etc/fail2ban/jail.d/mtproxywidum-ssh.conf
 [sshd]
 enabled = true
 port = ssh
@@ -7352,7 +7462,7 @@ F2B
             ;;
         off|disable)
             check_root
-            rm -f /etc/fail2ban/jail.d/mtproxymax-ssh.conf 2>/dev/null
+            rm -f /etc/fail2ban/jail.d/mtproxywidum-ssh.conf 2>/dev/null
             if command -v fail2ban-client >/dev/null 2>&1; then
                 fail2ban-client reload >/dev/null 2>&1 || true
             fi
@@ -7370,10 +7480,10 @@ F2B
             else
                 echo -e "     Status:          ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  Usage: mtproxymax ssh-shield [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum ssh-shield [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax ssh-shield [on|off|status]"
+            log_error "Usage: mtproxywidum ssh-shield [on|off|status]"
             return 1
             ;;
     esac
@@ -7467,21 +7577,21 @@ run_tcp_boost() {
             sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_fastopen=3 >/dev/null 2>&1 || true
             mkdir -p /etc/sysctl.d
-            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxymax-bbr.conf
-# MTProxyMax Kernel TCP Boost
+            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxywidum-bbr.conf
+# MTProxyWidum Kernel TCP Boost
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 net.ipv4.tcp_fastopen = 3
 net.ipv4.tcp_slow_start_after_idle = 0
 SYSCTL
-            sysctl -p /etc/sysctl.d/99-mtproxymax-bbr.conf >/dev/null 2>&1 || true
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-bbr.conf >/dev/null 2>&1 || true
             TCP_BOOST_ENABLED="true"
             save_settings
             log_success "TCP BBR & Fast Open Booster activated successfully!"
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-bbr.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-bbr.conf 2>/dev/null
             sysctl -w net.core.default_qdisc=fq_codel >/dev/null 2>&1 || sysctl -w net.core.default_qdisc=pfifo_fast >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_congestion_control=cubic >/dev/null 2>&1 || sysctl -w net.ipv4.tcp_congestion_control=reno >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_fastopen=1 >/dev/null 2>&1 || true
@@ -7501,10 +7611,10 @@ SYSCTL
                 echo -e "     Congestion Control: ${YELLOW}${cc}${NC}"
             fi
             echo -e "     TCP Fast Open:      ${CYAN}${tfo}${NC}"
-            echo -e "  Usage: mtproxymax tcp-boost [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum tcp-boost [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax tcp-boost [on|off|status]"
+            log_error "Usage: mtproxywidum tcp-boost [on|off|status]"
             return 1
             ;;
     esac
@@ -7534,7 +7644,7 @@ run_leak_scan() {
     if [ "$leaks_found" -eq 0 ]; then
         echo -e "  ✅ ${GREEN}Clean Scan:${NC} No active secrets exceeded ${thresh} simultaneous subnets."
     fi
-    echo -e "  Usage: mtproxymax leak-scan [threshold_subnets]\n"
+    echo -e "  Usage: mtproxywidum leak-scan [threshold_subnets]\n"
 }
 
 run_cert_check() {
@@ -7590,7 +7700,7 @@ run_clone_link() {
         return 1
     fi
     echo -e "  Copy and run this exact line on any fresh target Linux VPS to instantly mirror settings:"
-    echo -e "  ${CYAN}${BOLD}mtproxymax bootstrap ${bundle_b64}${NC}\n"
+    echo -e "  ${CYAN}${BOLD}mtproxywidum bootstrap ${bundle_b64}${NC}\n"
 }
 
 run_bootstrap() {
@@ -7598,7 +7708,7 @@ run_bootstrap() {
     local bundle_b64="$*"
     bundle_b64=$(echo "$bundle_b64" | tr -d ' \r\n')
     if [ -z "$bundle_b64" ]; then
-        log_error "Usage: mtproxymax bootstrap <base64_payload>"
+        log_error "Usage: mtproxywidum bootstrap <base64_payload>"
         return 1
     fi
     echo -e "\n  📦 ${BOLD}Bootstrapping Server Configuration from Bundle...${NC}"
@@ -7674,10 +7784,10 @@ run_auto_heal() {
             else
                 echo -e "     Status:    ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  Usage: mtproxymax auto-heal [on|off|status] or mtproxymax heal\n"
+            echo -e "  Usage: mtproxywidum auto-heal [on|off|status] or mtproxywidum heal\n"
             ;;
         *)
-            log_error "Usage: mtproxymax auto-heal [on|off|status]"
+            log_error "Usage: mtproxywidum auto-heal [on|off|status]"
             return 1
             ;;
     esac
@@ -7695,21 +7805,21 @@ run_tcp_clean() {
             sysctl -w net.ipv4.tcp_keepalive_probes=4 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_fin_timeout=15 >/dev/null 2>&1 || true
             mkdir -p /etc/sysctl.d
-            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxymax-tcpclean.conf
-# MTProxyMax Dead Mobile Socket Reaper
+            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxywidum-tcpclean.conf
+# MTProxyWidum Dead Mobile Socket Reaper
 net.ipv4.tcp_keepalive_time = 300
 net.ipv4.tcp_keepalive_intvl = 15
 net.ipv4.tcp_keepalive_probes = 4
 net.ipv4.tcp_fin_timeout = 15
 SYSCTL
-            sysctl -p /etc/sysctl.d/99-mtproxymax-tcpclean.conf >/dev/null 2>&1 || true
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-tcpclean.conf >/dev/null 2>&1 || true
             TCP_CLEAN_ENABLED="true"
             save_settings
             log_success "Dead Mobile Socket Reaper activated successfully!"
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-tcpclean.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-tcpclean.conf 2>/dev/null
             sysctl -w net.ipv4.tcp_keepalive_time=7200 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_keepalive_intvl=75 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_keepalive_probes=9 >/dev/null 2>&1 || true
@@ -7731,10 +7841,10 @@ SYSCTL
                 echo -e "     Status:           ${YELLOW}DISABLED${NC} (OS default: ${ka_time}${ka_suffix})"
             fi
             echo -e "     Keep-Alive Time:  ${CYAN}${ka_time}${ka_suffix}${NC} (interval: ${ka_intvl}${ka_suffix}, probes: ${ka_probes})"
-            echo -e "  Usage: mtproxymax tcp-clean [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum tcp-clean [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax tcp-clean [on|off|status]"
+            log_error "Usage: mtproxywidum tcp-clean [on|off|status]"
             return 1
             ;;
     esac
@@ -7754,8 +7864,8 @@ run_socket_boost() {
             sysctl -w net.core.busy_read=50 >/dev/null 2>&1 || true
             sysctl -w net.core.busy_poll=50 >/dev/null 2>&1 || true
             mkdir -p /etc/sysctl.d
-            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxymax-sockboost.conf
-# MTProxyMax Ultra-Low Latency Socket Booster
+            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxywidum-sockboost.conf
+# MTProxyWidum Ultra-Low Latency Socket Booster
 net.core.somaxconn = 65535
 net.core.netdev_max_backlog = 65535
 net.ipv4.tcp_max_syn_backlog = 65535
@@ -7763,14 +7873,14 @@ net.ipv4.tcp_notsent_lowat = 16384
 net.core.busy_read = 50
 net.core.busy_poll = 50
 SYSCTL
-            sysctl -p /etc/sysctl.d/99-mtproxymax-sockboost.conf >/dev/null 2>&1 || true
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-sockboost.conf >/dev/null 2>&1 || true
             SOCKET_BOOST_ENABLED="true"
             save_settings
             log_success "Ultra-Low Latency Socket Booster activated successfully!"
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-sockboost.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-sockboost.conf 2>/dev/null
             sysctl -w net.core.somaxconn=4096 >/dev/null 2>&1 || true
             sysctl -w net.core.netdev_max_backlog=1000 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_max_syn_backlog=1024 >/dev/null 2>&1 || true
@@ -7793,10 +7903,10 @@ SYSCTL
             fi
             echo -e "     Socket Backlog:  ${CYAN}${somax}${NC}"
             echo -e "     Buffer Lowat:    ${CYAN}${lowat}${NC}"
-            echo -e "  Usage: mtproxymax socket-boost [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum socket-boost [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax socket-boost [on|off|status]"
+            log_error "Usage: mtproxywidum socket-boost [on|off|status]"
             return 1
             ;;
     esac
@@ -7847,10 +7957,10 @@ run_tls_pad() {
                 echo -e "     Status:              ${YELLOW}DISABLED${NC}"
             fi
             echo -e "     Current Cert Length: ${CYAN}${FAKE_CERT_LEN:-2048} bytes${NC}"
-            echo -e "  Usage: mtproxymax tls-pad [auto|off|status|randomize]\n"
+            echo -e "  Usage: mtproxywidum tls-pad [auto|off|status|randomize]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax tls-pad [auto|off|status|randomize]"
+            log_error "Usage: mtproxywidum tls-pad [auto|off|status|randomize]"
             return 1
             ;;
     esac
@@ -7887,10 +7997,10 @@ run_honeypot() {
             else
                 echo -e "     Status:         ${YELLOW}DISABLED${NC}"
             fi
-            echo -e "  Usage: mtproxymax honeypot [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum honeypot [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax honeypot [on|off|status]"
+            log_error "Usage: mtproxywidum honeypot [on|off|status]"
             return 1
             ;;
     esac
@@ -7920,8 +8030,8 @@ run_tcp_fastpath() {
             sysctl -w net.ipv4.tcp_keepalive_intvl=30 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_keepalive_probes=5 >/dev/null 2>&1 || true
             mkdir -p /etc/sysctl.d
-            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxymax-fastpath.conf
-# MTProxyMax TCP Fast-Path & High Concurrency Optimizations
+            cat <<'SYSCTL' > /etc/sysctl.d/99-mtproxywidum-fastpath.conf
+# MTProxyWidum TCP Fast-Path & High Concurrency Optimizations
 net.ipv4.tcp_window_scaling = 1
 net.ipv4.tcp_sack = 1
 net.ipv4.tcp_mtu_probing = 1
@@ -7938,14 +8048,14 @@ net.ipv4.tcp_keepalive_time = 300
 net.ipv4.tcp_keepalive_intvl = 30
 net.ipv4.tcp_keepalive_probes = 5
 SYSCTL
-            sysctl -p /etc/sysctl.d/99-mtproxymax-fastpath.conf >/dev/null 2>&1 || true
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-fastpath.conf >/dev/null 2>&1 || true
             TCP_FASTPATH_ENABLED="true"
             save_settings
             log_success "TCP Fast-Path, Fast Open, & Mobile Keepalive Optimizations activated!"
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-fastpath.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-fastpath.conf 2>/dev/null
             sysctl -w net.ipv4.tcp_mtu_probing=0 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_no_metrics_save=0 >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_fastopen=1 >/dev/null 2>&1 || true
@@ -7973,10 +8083,10 @@ SYSCTL
             echo -e "     SOMAXCONN:     ${CYAN}${somax}${NC}"
             echo -e "     TCP Fast Open: ${CYAN}$([ "$tfo" = "3" ] && echo "ON (Send+Recv)" || echo "$tfo")${NC}"
             echo -e "     TIME_WAIT Reuse: ${CYAN}$([ "$tw" = "1" ] && echo "ON" || echo "OFF")${NC}"
-            echo -e "  Usage: mtproxymax tcp-fastpath [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum tcp-fastpath [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax tcp-fastpath [on|off|status]"
+            log_error "Usage: mtproxywidum tcp-fastpath [on|off|status]"
             return 1
             ;;
     esac
@@ -8075,8 +8185,8 @@ run_ram_tune() {
             sysctl -w net.ipv4.tcp_wmem="4096 $wmem_def $wmem_max" >/dev/null 2>&1 || true
             sysctl -w vm.min_free_kbytes=$min_free_kb >/dev/null 2>&1 || true
             mkdir -p /etc/sysctl.d
-            cat > /etc/sysctl.d/99-mtproxymax-ramtune.conf <<SYSCTL
-# MTProxyMax Dynamic RAM Auto-Tune ($tier)
+            cat > /etc/sysctl.d/99-mtproxywidum-ramtune.conf <<SYSCTL
+# MTProxyWidum Dynamic RAM Auto-Tune ($tier)
 # Detected: ${total_mb} MB total RAM
 net.core.rmem_max = $rmem_max
 net.core.wmem_max = $wmem_max
@@ -8086,14 +8196,14 @@ net.ipv4.tcp_rmem = 4096 $rmem_def $rmem_max
 net.ipv4.tcp_wmem = 4096 $wmem_def $wmem_max
 vm.min_free_kbytes = $min_free_kb
 SYSCTL
-            sysctl -p /etc/sysctl.d/99-mtproxymax-ramtune.conf >/dev/null 2>&1 || true
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-ramtune.conf >/dev/null 2>&1 || true
             RAM_TUNE_ENABLED="true"
             save_settings
             log_success "RAM Auto-Tune activated for ${tier} (${total_mb} MB detected)."
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-ramtune.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-ramtune.conf 2>/dev/null
             sysctl -w net.core.rmem_max=212992 >/dev/null 2>&1 || true
             sysctl -w net.core.wmem_max=212992 >/dev/null 2>&1 || true
             sysctl -w net.core.rmem_default=212992 >/dev/null 2>&1 || true
@@ -8119,10 +8229,10 @@ SYSCTL
             echo -e "     Read Buffer:    ${CYAN}${rmem} bytes${NC}"
             echo -e "     Write Buffer:   ${CYAN}${wmem} bytes${NC}"
             echo -e "     Min Free KB:    ${CYAN}${minfree}${NC}"
-            echo -e "  Usage: mtproxymax ram-tune [auto|off|status]\n"
+            echo -e "  Usage: mtproxywidum ram-tune [auto|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax ram-tune [auto|off|status]"
+            log_error "Usage: mtproxywidum ram-tune [auto|off|status]"
             return 1
             ;;
     esac
@@ -8137,7 +8247,7 @@ run_port_hop() {
             check_root
             local range="$2"
             if [ -z "$range" ]; then
-                log_error "Usage: mtproxymax port-hop add <start>:<end>  (e.g. 2000:2050)"
+                log_error "Usage: mtproxywidum port-hop add <start>:<end>  (e.g. 2000:2050)"
                 return 1
             fi
             local start_port end_port
@@ -8165,14 +8275,14 @@ run_port_hop() {
             fi
             # Apply iptables NAT redirect
             if command -v iptables &>/dev/null; then
-                iptables -t nat -A PREROUTING -p tcp --dport "${start_port}:${end_port}" -m comment --comment "mtproxymax_porthop" -j REDIRECT --to-ports "$target_port" 2>/dev/null || {
+                iptables -t nat -A PREROUTING -p tcp --dport "${start_port}:${end_port}" -m comment --comment "mtproxywidum_porthop" -j REDIRECT --to-ports "$target_port" 2>/dev/null || {
                     log_error "Failed to apply iptables redirect rule."
                     return 1
                 }
             elif command -v nft &>/dev/null; then
-                nft add table inet mtproxymax_hop 2>/dev/null || true
-                nft add chain inet mtproxymax_hop prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
-                nft add rule inet mtproxymax_hop prerouting tcp dport "${start_port}-${end_port}" redirect to :"$target_port" 2>/dev/null || {
+                nft add table inet mtproxywidum_hop 2>/dev/null || true
+                nft add chain inet mtproxywidum_hop prerouting '{ type nat hook prerouting priority -100; }' 2>/dev/null || true
+                nft add rule inet mtproxywidum_hop prerouting tcp dport "${start_port}-${end_port}" redirect to :"$target_port" 2>/dev/null || {
                     log_error "Failed to apply nftables redirect rule."
                     return 1
                 }
@@ -8193,7 +8303,7 @@ run_port_hop() {
             check_root
             local range="$2"
             if [ -z "$range" ]; then
-                log_error "Usage: mtproxymax port-hop remove <start>:<end>"
+                log_error "Usage: mtproxywidum port-hop remove <start>:<end>"
                 return 1
             fi
             local start_port end_port
@@ -8203,10 +8313,10 @@ run_port_hop() {
             # Remove iptables rule
             if command -v iptables &>/dev/null; then
                 iptables -t nat -D PREROUTING -p tcp --dport "${start_port}:${end_port}" -j REDIRECT --to-ports "$target_port" 2>/dev/null || true
-                iptables -t nat -D PREROUTING -p tcp --dport "${start_port}:${end_port}" -m comment --comment "mtproxymax_porthop" -j REDIRECT --to-ports "$target_port" 2>/dev/null || true
+                iptables -t nat -D PREROUTING -p tcp --dport "${start_port}:${end_port}" -m comment --comment "mtproxywidum_porthop" -j REDIRECT --to-ports "$target_port" 2>/dev/null || true
             fi
             if command -v nft &>/dev/null; then
-                nft delete table inet mtproxymax_hop 2>/dev/null || true
+                nft delete table inet mtproxywidum_hop 2>/dev/null || true
             fi
             # Remove from saved ranges
             local new_ranges=""
@@ -8237,10 +8347,10 @@ run_port_hop() {
             else
                 echo -e "     Status:  ${YELLOW}NO ACTIVE RANGES${NC}"
             fi
-            echo -e "  Usage: mtproxymax port-hop [add <start:end>|remove <start:end>|list]\n"
+            echo -e "  Usage: mtproxywidum port-hop [add <start:end>|remove <start:end>|list]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax port-hop [add <start:end>|remove <start:end>|list]"
+            log_error "Usage: mtproxywidum port-hop [add <start:end>|remove <start:end>|list]"
             return 1
             ;;
     esac
@@ -8295,10 +8405,10 @@ run_cpu_tune() {
                 done
             done
             # Create persistence script
-            mkdir -p /etc/mtproxymax
-            cat > /etc/mtproxymax/cpu-tune.sh <<CPUTUNE
+            mkdir -p /etc/mtproxywidum
+            cat > /etc/mtproxywidum/cpu-tune.sh <<CPUTUNE
 #!/bin/bash
-# MTProxyMax Multi-Core IRQ Packet Spreading
+# MTProxyWidum Multi-Core IRQ Packet Spreading
 # Auto-generated — applied on boot
 RPS_MASK="$rps_mask"
 RFS_ENTRIES="$rfs_entries"
@@ -8313,7 +8423,7 @@ for iface in /sys/class/net/*/; do
     done
 done
 CPUTUNE
-            chmod +x /etc/mtproxymax/cpu-tune.sh
+            chmod +x /etc/mtproxywidum/cpu-tune.sh
             CPU_TUNE_ENABLED="true"
             save_settings
             if [ "$skipped" -gt 0 ] && [ "$applied" -eq 0 ]; then
@@ -8335,7 +8445,7 @@ CPUTUNE
                     [ -f "${q}/rps_cpus" ] && echo "0" > "${q}/rps_cpus" 2>/dev/null || true
                 done
             done
-            rm -f /etc/mtproxymax/cpu-tune.sh 2>/dev/null
+            rm -f /etc/mtproxywidum/cpu-tune.sh 2>/dev/null
             CPU_TUNE_ENABLED="false"
             save_settings
             log_success "Multi-Core IRQ spreading disabled."
@@ -8365,10 +8475,10 @@ CPUTUNE
             if [ "$virt_type" = "lxc" ] || [ "$virt_type" = "openvz" ]; then
                 echo -e "     ${YELLOW}⚠ Container detected — RPS writes may be restricted${NC}"
             fi
-            echo -e "  Usage: mtproxymax cpu-tune [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum cpu-tune [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax cpu-tune [on|off|status]"
+            log_error "Usage: mtproxywidum cpu-tune [on|off|status]"
             return 1
             ;;
     esac
@@ -8388,7 +8498,7 @@ run_bbr() {
             if ! echo "$avail_cc" | grep -qw "bbr"; then
                 log_warn "Kernel does not report 'bbr' in available congestion controls. Attempting sysctl anyway..."
             fi
-            local sysctl_content="# MTProxyMax BBRv3 & ECN High-Throughput Optimization\n"
+            local sysctl_content="# MTProxyWidum BBRv3 & ECN High-Throughput Optimization\n"
             if sysctl -w net.core.default_qdisc=fq >/dev/null 2>&1; then
                 sysctl_content+="net.core.default_qdisc = fq\n"
             fi
@@ -8407,15 +8517,15 @@ run_bbr() {
                 sysctl_content+="net.ipv4.tcp_wmem = 4096 65536 16777216\n"
             fi
             mkdir -p /etc/sysctl.d
-            echo -e "$sysctl_content" > /etc/sysctl.d/99-mtproxymax-bbr.conf
-            sysctl -p /etc/sysctl.d/99-mtproxymax-bbr.conf >/dev/null 2>&1 || true
+            echo -e "$sysctl_content" > /etc/sysctl.d/99-mtproxywidum-bbr.conf
+            sysctl -p /etc/sysctl.d/99-mtproxywidum-bbr.conf >/dev/null 2>&1 || true
             BBR_ECN_ENABLED="true"
             save_settings
             log_success "BBRv3 Congestion Control, ECN, and 16MB TCP Buffers activated!"
             ;;
         off|disable)
             check_root
-            rm -f /etc/sysctl.d/99-mtproxymax-bbr.conf 2>/dev/null
+            rm -f /etc/sysctl.d/99-mtproxywidum-bbr.conf 2>/dev/null
             sysctl -w net.ipv4.tcp_ecn=2 >/dev/null 2>&1 || true
             sysctl -w net.core.default_qdisc=pfifo_fast >/dev/null 2>&1 || true
             sysctl -w net.ipv4.tcp_congestion_control=cubic >/dev/null 2>&1 || true
@@ -8437,10 +8547,10 @@ run_bbr() {
             echo -e "     Congestion:    ${CYAN}${cur_cc}${NC}"
             echo -e "     Queue Disc:    ${CYAN}${cur_qdisc}${NC}"
             echo -e "     TCP ECN:       ${CYAN}$([ "$cur_ecn" = "1" ] && echo "ON (Explicit Congestion Notification)" || echo "OFF (${cur_ecn})")${NC}"
-            echo -e "  Usage: mtproxymax bbr [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum bbr [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax bbr [on|off|status]"
+            log_error "Usage: mtproxywidum bbr [on|off|status]"
             return 1
             ;;
     esac
@@ -8459,18 +8569,18 @@ run_anti_dpi_shield() {
             if command -v iptables >/dev/null 2>&1; then
                 local _chain
                 for _chain in FORWARD OUTPUT POSTROUTING; do
-                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
-                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
-                    iptables -t mangle -I "$_chain" 1 -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null && _ok=true || true
-                    iptables -t mangle -I "$_chain" 2 -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null || true
+                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
+                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
+                    iptables -t mangle -I "$_chain" 1 -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null && _ok=true || true
+                    iptables -t mangle -I "$_chain" 2 -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null || true
                 done
             fi
             if [ "$_ok" = "false" ] && command -v nft >/dev/null 2>&1; then
-                nft add table inet mtproxymax_antidpi 2>/dev/null || true
-                nft add chain inet mtproxymax_antidpi forward '{ type filter hook forward priority mangle; policy accept; }' 2>/dev/null || true
-                nft add chain inet mtproxymax_antidpi postrouting '{ type filter hook postrouting priority mangle; policy accept; }' 2>/dev/null || true
-                nft add rule inet mtproxymax_antidpi forward tcp flags '& (syn|rst) == syn' tcp dport "$PROXY_PORT" tcp option maxseg size set 1360 2>/dev/null && _ok=true || true
-                nft add rule inet mtproxymax_antidpi postrouting tcp flags '& (syn|rst) == syn' tcp sport "$PROXY_PORT" tcp option maxseg size set 1360 2>/dev/null || true
+                nft add table inet mtproxywidum_antidpi 2>/dev/null || true
+                nft add chain inet mtproxywidum_antidpi forward '{ type filter hook forward priority mangle; policy accept; }' 2>/dev/null || true
+                nft add chain inet mtproxywidum_antidpi postrouting '{ type filter hook postrouting priority mangle; policy accept; }' 2>/dev/null || true
+                nft add rule inet mtproxywidum_antidpi forward tcp flags '& (syn|rst) == syn' tcp dport "$PROXY_PORT" tcp option maxseg size set 1360 2>/dev/null && _ok=true || true
+                nft add rule inet mtproxywidum_antidpi postrouting tcp flags '& (syn|rst) == syn' tcp sport "$PROXY_PORT" tcp option maxseg size set 1360 2>/dev/null || true
             fi
             ANTI_DPI_SHIELD_ENABLED="true"
             save_settings
@@ -8486,12 +8596,12 @@ run_anti_dpi_shield() {
             if command -v iptables >/dev/null 2>&1; then
                 local _chain
                 for _chain in FORWARD OUTPUT POSTROUTING; do
-                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
-                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxymax_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
+                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --dport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
+                    while iptables -t mangle -D "$_chain" -p tcp --tcp-flags SYN,RST SYN --sport "${PROXY_PORT}" -m comment --comment "mtproxywidum_antidpi" -j TCPMSS --set-mss 1360 2>/dev/null; do :; done
                 done
             fi
             if command -v nft >/dev/null 2>&1; then
-                nft delete table inet mtproxymax_antidpi 2>/dev/null || true
+                nft delete table inet mtproxywidum_antidpi 2>/dev/null || true
             fi
             ANTI_DPI_SHIELD_ENABLED="false"
             save_settings
@@ -8506,10 +8616,10 @@ run_anti_dpi_shield() {
             fi
             echo -e "     Target Port:   ${CYAN}${PROXY_PORT:-443}${NC}"
             echo -e "     Protection:    ${CYAN}Scrubs MTProto FakeTLS packet size signatures from GFW/TSPU/TIC DPI boxes${NC}"
-            echo -e "  Usage: mtproxymax shield [on|off|status]\n"
+            echo -e "  Usage: mtproxywidum shield [on|off|status]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax shield [on|off|status]"
+            log_error "Usage: mtproxywidum shield [on|off|status]"
             return 1
             ;;
     esac
@@ -8549,7 +8659,7 @@ run_cover_shield() {
             log_success "Reverse-Proxy Cover Shield disabled."
             ;;
         target|set-target)
-            [ -z "$target" ] && { log_error "Usage: mtproxymax cover-shield target <https://domain.com>"; return 1; }
+            [ -z "$target" ] && { log_error "Usage: mtproxywidum cover-shield target <https://domain.com>"; return 1; }
             target="${target//\'/}" # strip single quotes for safe settings persistence
             target="${target// /}"  # strip whitespace
             [[ "$target" =~ ^https?:// ]] || target="https://${target}"
@@ -8571,10 +8681,10 @@ run_cover_shield() {
             echo -e "     Listen Port:   ${CYAN}${PROXY_PORT:-443}${NC}"
             echo -e "     Fallback Site: ${CYAN}${COVER_FALLBACK_TARGET:-https://cloudflare.com}${NC}"
             echo -e "     Behavior:      ${CYAN}Forwards HTTP GET & invalid TLS handshakes to fallback site instead of resetting socket${NC}"
-            echo -e "  Usage: mtproxymax cover-shield [on|off|status|target <url>]\n"
+            echo -e "  Usage: mtproxywidum cover-shield [on|off|status|target <url>]\n"
             ;;
         *)
-            log_error "Usage: mtproxymax cover-shield [on|off|status|target <url>]"
+            log_error "Usage: mtproxywidum cover-shield [on|off|status|target <url>]"
             return 1
             ;;
     esac
@@ -8932,7 +9042,7 @@ upstream_test() {
 # ── Section 9: Container Management ─────────────────────────
 
 is_proxy_running() {
-    [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME:-mtproxymax}" 2>/dev/null)" = "true" ]
+    [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME:-mtproxywidum}" 2>/dev/null)" = "true" ]
 }
 
 run_proxy_container() {
@@ -8955,7 +9065,7 @@ run_proxy_container() {
     if ! is_port_available "$PROXY_PORT"; then
         # Check if it's our own container
         if is_proxy_running; then
-            log_info "Port ${PROXY_PORT} is in use by MTProxyMax"
+            log_info "Port ${PROXY_PORT} is in use by MTProxyWidum"
         else
             log_error "Port ${PROXY_PORT} is already in use by another process"
             return 1
@@ -9064,7 +9174,7 @@ stop_proxy_container() {
             traffic_tracking_teardown
             speed_limit_clear 2>/dev/null || true
             # Signal intentional stop — prevents bot auto-recovery from restarting
-            echo "$(date +%s)" > /tmp/.mtproxymax_stopped 2>/dev/null || true
+            echo "$(date +%s)" > /tmp/.mtproxywidum_stopped 2>/dev/null || true
             log_success "Proxy stopped"
         else
             log_error "Failed to stop proxy"
@@ -9082,7 +9192,7 @@ _stop_all_instances() {
     load_instances 2>/dev/null
     local i
     for i in "${!INSTANCE_PORTS[@]}"; do
-        docker stop --timeout 10 "mtproxymax-${INSTANCE_PORTS[$i]}" &>/dev/null || true
+        docker stop --timeout 10 "mtproxywidum-${INSTANCE_PORTS[$i]}" &>/dev/null || true
     done
 }
 
@@ -9092,7 +9202,7 @@ _start_all_instances() {
     local i _orig_port="$PROXY_PORT" _orig_mport="$PROXY_METRICS_PORT"
     for i in "${!INSTANCE_PORTS[@]}"; do
         [ "${INSTANCE_ENABLED[$i]}" = "true" ] || continue
-        local cname="mtproxymax-${INSTANCE_PORTS[$i]}"
+        local cname="mtproxywidum-${INSTANCE_PORTS[$i]}"
         docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${cname}$" && continue
         # Regenerate instance config dynamically
         local inst_config="${CONFIG_DIR}/config-${INSTANCE_PORTS[$i]}.toml"
@@ -9126,7 +9236,7 @@ _start_all_instances() {
 
 start_proxy_container() {
     # Clear intentional-stop flag
-    rm -f /tmp/.mtproxymax_stopped 2>/dev/null
+    rm -f /tmp/.mtproxywidum_stopped 2>/dev/null
 
     if is_proxy_running; then
         log_info "Proxy is already running"
@@ -9173,7 +9283,7 @@ reload_proxy_config() {
             PROXY_METRICS_PORT="${INSTANCE_METRICS_PORTS[$i]}"
             generate_telemt_config
             mv "${CONFIG_DIR}/config.toml" "$inst_config" 2>/dev/null
-            docker kill -s SIGHUP "mtproxymax-${INSTANCE_PORTS[$i]}" 2>/dev/null || true
+            docker kill -s SIGHUP "mtproxywidum-${INSTANCE_PORTS[$i]}" 2>/dev/null || true
         done
         PROXY_PORT="$_orig_port"
         PROXY_METRICS_PORT="$_orig_mport"
@@ -9298,7 +9408,7 @@ generate_qr_url() {
 
 GEOBLOCK_CACHE_DIR="${INSTALL_DIR}/geoblock"
 GEOBLOCK_IPSET_PREFIX="mtpmax_"
-GEOBLOCK_COMMENT="mtproxymax-geoblock"
+GEOBLOCK_COMMENT="mtproxywidum-geoblock"
 
 # Ensure ipset is installed
 _ensure_ipset() {
@@ -9443,7 +9553,7 @@ geoblock_reapply_all() {
     fi
 }
 
-# Remove ALL mtproxymax geoblock rules (called on uninstall)
+# Remove ALL mtproxywidum geoblock rules (called on uninstall)
 geoblock_remove_all() {
     # Remove all tagged iptables rules (both geoblock and geoblock-default)
     if command -v iptables &>/dev/null; then
@@ -9623,7 +9733,7 @@ health_check() {
 # ── Section 13: Auto-Update ─────────────────────────────────
 
 _UPDATE_SHA_FILE="${INSTALL_DIR}/.update_sha"
-_UPDATE_BADGE="/tmp/.mtproxymax_update_available"
+_UPDATE_BADGE="/tmp/.mtproxywidum_update_available"
 
 # Background SHA check — non-blocking, ~40 bytes over the wire
 check_update_sha_bg() {
@@ -9659,7 +9769,7 @@ self_update() {
     # Prevent concurrent updates
     if command -v flock &>/dev/null; then
         local _lfd
-        exec {_lfd}>/tmp/.mtproxymax_update.lock
+        exec {_lfd}>/tmp/.mtproxywidum_update.lock
         if ! flock -n "$_lfd" 2>/dev/null; then
             log_warn "Another update check is already in progress."
             exec {_lfd}>&- 2>/dev/null
@@ -9670,7 +9780,7 @@ self_update() {
     fi
 
     local _script_updated=false
-    local _url="https://raw.githubusercontent.com/${GITHUB_REPO}/main/mtproxymax.sh"
+    local _url="https://raw.githubusercontent.com/${GITHUB_REPO}/main/mtproxywidum.sh"
 
     echo ""
     log_info "Checking for script updates..."
@@ -9684,8 +9794,8 @@ self_update() {
             log_error "Downloaded script has syntax errors — aborting"
             rm -f "$_tmp"; return 1
         fi
-        if ! grep -q "GITHUB_REPO=\"SamNet-dev/MTProxyMax\"" "$_tmp" 2>/dev/null; then
-            log_error "Downloaded file doesn't look like MTProxyMax — aborting"
+        if ! grep -q "GITHUB_REPO=\"TETRIX8/MTProxyMaxWidum\"" "$_tmp" 2>/dev/null; then
+            log_error "Downloaded file doesn't look like MTProxyWidum — aborting"
             rm -f "$_tmp"; return 1
         fi
         local _dl_size
@@ -9700,7 +9810,7 @@ self_update() {
 
         # Compare SHA256 — if identical, already up to date
         local _local_hash _remote_hash
-        _local_hash=$(sha256sum "${INSTALL_DIR}/mtproxymax" 2>/dev/null | cut -d' ' -f1)
+        _local_hash=$(sha256sum "${INSTALL_DIR}/mtproxywidum" 2>/dev/null | cut -d' ' -f1)
         _remote_hash=$(sha256sum "$_tmp" | cut -d' ' -f1)
 
         if [ "$_local_hash" = "$_remote_hash" ]; then
@@ -9726,10 +9836,10 @@ self_update() {
                 rm -f "$_tmp"
             else
                 mkdir -p "$BACKUP_DIR"
-                cp "${INSTALL_DIR}/mtproxymax" \
-                   "${BACKUP_DIR}/mtproxymax.v${VERSION}.$(date +%s)" 2>/dev/null || true
+                cp "${INSTALL_DIR}/mtproxywidum" \
+                   "${BACKUP_DIR}/mtproxywidum.v${VERSION}.$(date +%s)" 2>/dev/null || true
                 chmod +x "$_tmp"
-                mv "$_tmp" "${INSTALL_DIR}/mtproxymax"
+                mv "$_tmp" "${INSTALL_DIR}/mtproxywidum"
                 log_success "Script updated to v${_new_ver:-?}"
                 _script_updated=true
                 _SCRIPT_NEEDS_REEXEC=true
@@ -9758,20 +9868,20 @@ self_update() {
     # Always regenerate and restart Telegram bot service to apply latest daemon code
     if [ "${TELEGRAM_ENABLED:-}" = "true" ]; then
         telegram_generate_service_script
-        if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/mtproxymax-telegram.service ]; then
+        if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/mtproxywidum-telegram.service ]; then
             log_info "Restarting Telegram bot service..."
-            systemctl restart mtproxymax-telegram.service 2>/dev/null \
+            systemctl restart mtproxywidum-telegram.service 2>/dev/null \
                 && log_success "Telegram bot service restarted" \
-                || log_warn "Telegram restart failed — run: systemctl restart mtproxymax-telegram.service"
+                || log_warn "Telegram restart failed — run: systemctl restart mtproxywidum-telegram.service"
         fi
     fi
 
     # Always regenerate and restart Replication sync service if active
     if [ "${REPLICATION_ENABLED:-}" = "true" ]; then
         replication_generate_sync_script
-        if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/mtproxymax-sync.service ]; then
+        if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/mtproxywidum-sync.service ]; then
             log_info "Restarting replication sync service..."
-            systemctl restart mtproxymax-sync.service 2>/dev/null || true
+            systemctl restart mtproxywidum-sync.service 2>/dev/null || true
         fi
     fi
 
@@ -9843,7 +9953,7 @@ voucher_create() {
 voucher_list() {
     load_vouchers
     if [ ! -f "$VOUCHERS_FILE" ] || [ ! -s "$VOUCHERS_FILE" ]; then
-        echo -e "  ${DIM}No vouchers found. Run 'mtproxymax voucher create' to generate codes.${NC}"
+        echo -e "  ${DIM}No vouchers found. Run 'mtproxywidum voucher create' to generate codes.${NC}"
         return 0
     fi
     local filter="${1:-all}"
@@ -9961,7 +10071,7 @@ portal_export_data() {
     
     cat > "$tmp_json" << JSON_EOF
 {
-  "server_label": "${TELEGRAM_SERVER_LABEL:-MTProxyMax}",
+  "server_label": "${TELEGRAM_SERVER_LABEL:-MTProxyWidum}",
   "server_ip": "${ip}",
   "port": ${PROXY_PORT:-443},
   "updated_at": "$(date -u '+%Y-%m-%d %H:%M:%S UTC')",
@@ -10085,10 +10195,10 @@ scanner_shield_on() {
         fi
     fi
     if [ "$_ok" = "false" ] && command -v nft >/dev/null 2>&1; then
-        nft add table inet mtproxymax_scanners 2>/dev/null || true
-        nft add set inet mtproxymax_scanners blacklist '{ type ipv4_addr; flags interval; }' 2>/dev/null || true
-        nft add chain inet mtproxymax_scanners input '{ type filter hook input priority filter; policy accept; }' 2>/dev/null || true
-        nft add rule inet mtproxymax_scanners input tcp dport "$PROXY_PORT" ip saddr @blacklist counter drop 2>/dev/null && _ok=true || true
+        nft add table inet mtproxywidum_scanners 2>/dev/null || true
+        nft add set inet mtproxywidum_scanners blacklist '{ type ipv4_addr; flags interval; }' 2>/dev/null || true
+        nft add chain inet mtproxywidum_scanners input '{ type filter hook input priority filter; policy accept; }' 2>/dev/null || true
+        nft add rule inet mtproxywidum_scanners input tcp dport "$PROXY_PORT" ip saddr @blacklist counter drop 2>/dev/null && _ok=true || true
     fi
     SCANNER_SHIELD_ENABLED="true"
     save_settings
@@ -10109,7 +10219,7 @@ scanner_shield_off() {
         ipset destroy "$SCANNER_SHIELD_SET" 2>/dev/null || true
     fi
     if command -v nft >/dev/null 2>&1; then
-        nft delete table inet mtproxymax_scanners 2>/dev/null || true
+        nft delete table inet mtproxywidum_scanners 2>/dev/null || true
     fi
     SCANNER_SHIELD_ENABLED="false"
     save_settings
@@ -10124,10 +10234,10 @@ scanner_shield_update() {
             ipset add "$SCANNER_SHIELD_SET" "$sub" 2>/dev/null || true
         done
     elif command -v nft &>/dev/null; then
-        nft add table inet mtproxymax_scanners 2>/dev/null || true
-        nft add set inet mtproxymax_scanners blacklist '{ type ipv4_addr; flags interval; }' 2>/dev/null || true
+        nft add table inet mtproxywidum_scanners 2>/dev/null || true
+        nft add set inet mtproxywidum_scanners blacklist '{ type ipv4_addr; flags interval; }' 2>/dev/null || true
         for sub in "${subnets[@]}"; do
-            nft add element inet mtproxymax_scanners blacklist "{ $sub }" 2>/dev/null || true
+            nft add element inet mtproxywidum_scanners blacklist "{ $sub }" 2>/dev/null || true
         done
     fi
 }
@@ -10170,10 +10280,10 @@ speed_limit_clear() {
     fi
     # Also clean iptables marks if any
     if command -v iptables &>/dev/null; then
-        iptables -t mangle -D PREROUTING -j MTPROXYMAX_QOS 2>/dev/null || true
-        iptables -t mangle -D POSTROUTING -j MTPROXYMAX_QOS 2>/dev/null || true
-        iptables -t mangle -F MTPROXYMAX_QOS 2>/dev/null || true
-        iptables -t mangle -X MTPROXYMAX_QOS 2>/dev/null || true
+        iptables -t mangle -D PREROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || true
+        iptables -t mangle -D POSTROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || true
+        iptables -t mangle -F MTPROXYWIDUM_QOS 2>/dev/null || true
+        iptables -t mangle -X MTPROXYWIDUM_QOS 2>/dev/null || true
     fi
 }
 
@@ -10198,9 +10308,9 @@ speed_limit_apply() {
 
     # Prepare iptables mangle chain for marking
     if command -v iptables &>/dev/null; then
-        iptables -t mangle -N MTPROXYMAX_QOS 2>/dev/null || true
-        iptables -t mangle -C PREROUTING -j MTPROXYMAX_QOS 2>/dev/null || iptables -t mangle -I PREROUTING -j MTPROXYMAX_QOS 2>/dev/null || true
-        iptables -t mangle -C POSTROUTING -j MTPROXYMAX_QOS 2>/dev/null || iptables -t mangle -I POSTROUTING -j MTPROXYMAX_QOS 2>/dev/null || true
+        iptables -t mangle -N MTPROXYWIDUM_QOS 2>/dev/null || true
+        iptables -t mangle -C PREROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || iptables -t mangle -I PREROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || true
+        iptables -t mangle -C POSTROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || iptables -t mangle -I POSTROUTING -j MTPROXYWIDUM_QOS 2>/dev/null || true
     fi
 
     local class_idx=100
@@ -10216,7 +10326,7 @@ speed_limit_apply() {
             # Egress (Download sent to clients from proxy port)
             tc class add dev "$iface" parent 1: classid "1:${class_idx}" htb rate "${down}kbit" ceil "${down}kbit" 2>/dev/null || true
             if command -v iptables &>/dev/null; then
-                iptables -t mangle -A MTPROXYMAX_QOS -p tcp --sport "$target" -j MARK --set-mark "$class_idx" 2>/dev/null || true
+                iptables -t mangle -A MTPROXYWIDUM_QOS -p tcp --sport "$target" -j MARK --set-mark "$class_idx" 2>/dev/null || true
             fi
             tc filter add dev "$iface" protocol ip parent 1:0 prio 2 handle "$class_idx" fw flowid "1:${class_idx}" 2>/dev/null || true
 
@@ -10224,7 +10334,7 @@ speed_limit_apply() {
             local class_idx_up=$((class_idx + 10000))
             tc class add dev "$iface" parent 1: classid "1:${class_idx_up}" htb rate "${up}kbit" ceil "${up}kbit" 2>/dev/null || true
             if command -v iptables &>/dev/null; then
-                iptables -t mangle -A MTPROXYMAX_QOS -p tcp --dport "$target" -j MARK --set-mark "$class_idx_up" 2>/dev/null || true
+                iptables -t mangle -A MTPROXYWIDUM_QOS -p tcp --dport "$target" -j MARK --set-mark "$class_idx_up" 2>/dev/null || true
             fi
             tc filter add dev "$iface" protocol ip parent 1:0 prio 2 handle "$class_idx_up" fw flowid "1:${class_idx_up}" 2>/dev/null || true
         fi
@@ -10233,7 +10343,7 @@ speed_limit_apply() {
 
 speed_limit_set() {
     local target="$1" down="$2" up="${3:-$2}"
-    [ -z "$target" ] || [ -z "$down" ] && { log_error "Usage: mtproxymax speed-limit set <global|port_number> <down_kbps> [up_kbps]"; return 1; }
+    [ -z "$target" ] || [ -z "$down" ] && { log_error "Usage: mtproxywidum speed-limit set <global|port_number> <down_kbps> [up_kbps]"; return 1; }
     [[ "$down" =~ ^[0-9]+$ ]] || { log_error "Down rate must be numeric (kbps)"; return 1; }
     [[ "$up" =~ ^[0-9]+$ ]] || { log_error "Up rate must be numeric (kbps)"; return 1; }
     if [ "$target" != "global" ]; then
@@ -10271,7 +10381,7 @@ speed_limit_set() {
 
 speed_limit_remove() {
     local target="$1"
-    [ -z "$target" ] && { log_error "Usage: mtproxymax speed-limit remove <global|port_number>"; return 1; }
+    [ -z "$target" ] && { log_error "Usage: mtproxywidum speed-limit remove <global|port_number>"; return 1; }
     load_speed_limits
     local new_t=() new_ty=() new_d=() new_u=() new_e=() found=false
     for i in "${!SPEED_LIMIT_TARGETS[@]}"; do
@@ -10349,7 +10459,7 @@ FLEET_JSON
             _rlbl="${REPL_LABELS[$k]:-slave-$k}"
             [ -z "$_rhost" ] && continue
             local _remote_json
-            _remote_json=$(ssh -i "${REPLICATION_SSH_KEY_PATH}" -p "$_rport" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "${_ruser}@${_rhost}" "${INSTALL_DIR}/mtproxymax fleet collect >/dev/null 2>&1 && cat ${FLEET_DATA_DIR}/node-*.json 2>/dev/null | head -1" 2>/dev/null || true)
+            _remote_json=$(ssh -i "${REPLICATION_SSH_KEY_PATH}" -p "$_rport" -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=accept-new "${_ruser}@${_rhost}" "${INSTALL_DIR}/mtproxywidum fleet collect >/dev/null 2>&1 && cat ${FLEET_DATA_DIR}/node-*.json 2>/dev/null | head -1" 2>/dev/null || true)
             if [ -n "$_remote_json" ] && echo "$_remote_json" | grep -q '"hostname":'; then
                 echo "$_remote_json" > "${FLEET_DATA_DIR}/node-slave-${_rlbl}.json" 2>/dev/null || true
                 chmod 600 "${FLEET_DATA_DIR}/node-slave-${_rlbl}.json" 2>/dev/null || true
@@ -10417,7 +10527,7 @@ SSLCONF
 
 ssl_issue() {
     local domain="$1" email="${2:-admin@${1:-localhost}}"
-    [ -z "$domain" ] && { log_error "Usage: mtproxymax ssl issue <domain_name> [admin_email]"; return 1; }
+    [ -z "$domain" ] && { log_error "Usage: mtproxywidum ssl issue <domain_name> [admin_email]"; return 1; }
     [[ "$domain" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]] || { log_error "Invalid domain name: ${domain}"; return 1; }
 
     mkdir -p "$SSL_DIR"
@@ -10450,7 +10560,7 @@ ssl_status() {
         echo -e "    Cert Path:  ${SSL_DIR}/${SSL_DOMAIN}.crt\n"
     else
         echo -e "    Status:     ${YELLOW}🔴 DISABLED / NO CERTIFICATE${NC}"
-        echo -e "    To issue:   ${GREEN}mtproxymax ssl issue <domain_name>${NC}\n"
+        echo -e "    To issue:   ${GREEN}mtproxywidum ssl issue <domain_name>${NC}\n"
     fi
 }
 
@@ -10496,7 +10606,7 @@ backup_cloud_toggle() {
     [ -z "$target" ] && {
         load_tg_settings
         target="${TELEGRAM_CHAT_IDS[0]:-}"
-        [ -z "$target" ] && { log_error "Usage: mtproxymax backup-cloud <telegram|rclone> <target_chat_id_or_s3_path>"; return 1; }
+        [ -z "$target" ] && { log_error "Usage: mtproxywidum backup-cloud <telegram|rclone> <target_chat_id_or_s3_path>"; return 1; }
     }
     CLOUD_BACKUP_ENABLED="true"
     CLOUD_BACKUP_MODE="$mode"
@@ -10510,7 +10620,7 @@ backup_cloud_push() {
     [ "${CLOUD_BACKUP_ENABLED}" = "true" ] || return 0
     local latest_tar="${1:-}"
     if [ -z "$latest_tar" ] || [ ! -f "$latest_tar" ]; then
-        latest_tar=$(ls -t "${BACKUP_DIR:-${INSTALL_DIR}/backups}"/mtproxymax-*.tar.gz* 2>/dev/null | head -1)
+        latest_tar=$(ls -t "${BACKUP_DIR:-${INSTALL_DIR}/backups}"/mtproxywidum-*.tar.gz* 2>/dev/null | head -1)
     fi
     [ -z "$latest_tar" ] || [ ! -f "$latest_tar" ] && { log_error "No backup tarball found to offload."; return 1; }
 
@@ -10526,7 +10636,7 @@ backup_cloud_push() {
                 log_error "Backup tarball size ($(format_bytes "$fsize")) exceeds Telegram Bot API 50MB limit. Use rclone/S3 mode instead."
                 return 1
             fi
-            local caption="☁️ <b>MTProxyMax Daily Backup (${VERSION})</b>%0A🖥 Host: $(hostname 2>/dev/null || echo unknown)%0A📅 Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            local caption="☁️ <b>MTProxyWidum Daily Backup (${VERSION})</b>%0A🖥 Host: $(hostname 2>/dev/null || echo unknown)%0A📅 Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
             if curl -s --max-time 120 -F "chat_id=${chat}" -F "document=@${latest_tar}" -F "caption=${caption}" -F "parse_mode=HTML" "https://api.telegram.org/bot${token}/sendDocument" | grep -q '"ok":true'; then
                 log_success "Backup tarball uploaded to Telegram Admin Chat (${chat}) successfully!"
                 return 0
@@ -10566,7 +10676,7 @@ backup_cloud_status() {
         echo -e "    Target:     ${CLOUD_BACKUP_TARGET}\n"
     else
         echo -e "    Status:     ${YELLOW}🔴 DISABLED${NC}"
-        echo -e "    To enable:  ${GREEN}mtproxymax backup-cloud telegram <your_chat_id>${NC}\n"
+        echo -e "    To enable:  ${GREEN}mtproxywidum backup-cloud telegram <your_chat_id>${NC}\n"
     fi
 }
 
@@ -10580,7 +10690,7 @@ telegram_send_message() {
 
     { [ -z "$token" ] || [ -z "$chat_id" ]; } && return 1
 
-    local label="${TELEGRAM_SERVER_LABEL:-MTProxyMax}"
+    local label="${TELEGRAM_SERVER_LABEL:-MTProxyWidum}"
     local ip
     ip=$(get_public_ip)
     local header
@@ -10617,7 +10727,7 @@ telegram_send_photo() {
     local chat_id="${TELEGRAM_CHAT_ID}"
     { [ -z "$token" ] || [ -z "$chat_id" ]; } && return 1
 
-    local label="${TELEGRAM_SERVER_LABEL:-MTProxyMax}"
+    local label="${TELEGRAM_SERVER_LABEL:-MTProxyWidum}"
     [ -n "$caption" ] && caption="[${label}] ${caption}"
 
     local _cfg
@@ -10677,7 +10787,7 @@ except: pass
 }
 
 telegram_test_message() {
-    local msg="🔧 *MTProxyMax Test*\n\n${SYM_CHECK} Bot is connected and working!\n\n_Sent from MTProxyMax v${VERSION}_"
+    local msg="🔧 *MTProxyWidum Test*\n\n${SYM_CHECK} Bot is connected and working!\n\n_Sent from MTProxyWidum v${VERSION}_"
     if telegram_send_message "$msg"; then
         log_success "Test message sent"
     else
@@ -10792,7 +10902,7 @@ telegram_setup_wizard() {
 
     echo ""
     echo -e "  ${BOLD}Step 4: Server label${NC}"
-    echo -en "  ${DIM}Label for this server [MTProxyMax]:${NC} "
+    echo -en "  ${DIM}Label for this server [MTProxyWidum]:${NC} "
     local label
     read -r label
     if [ -n "$label" ]; then
@@ -10823,21 +10933,21 @@ telegram_setup_wizard() {
 }
 
 telegram_generate_service_script() {
-    local script_path="${INSTALL_DIR}/mtproxymax-telegram.sh"
+    local script_path="${INSTALL_DIR}/mtproxywidum-telegram.sh"
 
     cat > "$script_path" << 'TELEGRAM_SCRIPT'
 #!/bin/bash
-# MTProxyMax Telegram Bot Service
+# MTProxyWidum Telegram Bot Service
 # Auto-generated — do not edit manually
 
-INSTALL_DIR="/opt/mtproxymax"
+INSTALL_DIR="/opt/mtproxywidum"
 SETTINGS_FILE="${INSTALL_DIR}/settings.conf"
 SECRETS_FILE="${INSTALL_DIR}/secrets.conf"
 OFFSET_FILE="${INSTALL_DIR}/relay_stats/tg_offset"
-PID_FILE="${INSTALL_DIR}/mtproxymax-telegram.pid"
+PID_FILE="${INSTALL_DIR}/mtproxywidum-telegram.pid"
 
 # Source the main script functions
-SCRIPT_PATH="${INSTALL_DIR}/mtproxymax"
+SCRIPT_PATH="${INSTALL_DIR}/mtproxywidum"
 
 # Keep the generated bot daemon self-contained.  It does not source the main
 # manager script, so helpers used by Telegram command handlers must be defined
@@ -10878,7 +10988,7 @@ format_duration() {
 }
 
 is_proxy_running() {
-    [ "$(docker inspect -f '{{.State.Running}}' mtproxymax 2>/dev/null)" = "true" ]
+    [ "$(docker inspect -f '{{.State.Running}}' mtproxywidum 2>/dev/null)" = "true" ]
 }
 
 get_container_uptime() {
@@ -10937,7 +11047,7 @@ get_cached_ip() {
 tg_send() {
     local msg
     msg=$(printf '%b' "$1")
-    local label="${TELEGRAM_SERVER_LABEL:-MTProxyMax}"
+    local label="${TELEGRAM_SERVER_LABEL:-MTProxyWidum}"
     local _ip; _ip=$(get_cached_ip)
     [ -n "$_ip" ] && msg="[$(_esc "$label") | ${_ip}] ${msg}" || msg="[$(_esc "$label")] ${msg}"
     curl -s --max-time 10 -X POST \
@@ -10965,7 +11075,7 @@ tg_send_photo() {
         -K <(printf 'url = "https://api.telegram.org/bot%s/sendPhoto"\n' "$TELEGRAM_BOT_TOKEN") \
         --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
         --data-urlencode "photo=${photo}" \
-        --data-urlencode "caption=[$(_esc "${TELEGRAM_SERVER_LABEL:-MTProxyMax}")] ${caption}" \
+        --data-urlencode "caption=[$(_esc "${TELEGRAM_SERVER_LABEL:-MTProxyWidum}")] ${caption}" \
         --data-urlencode "parse_mode=Markdown" >/dev/null 2>&1
 }
 
@@ -10983,7 +11093,7 @@ tg_send_photo_to() {
         -K <(printf 'url = "https://api.telegram.org/bot%s/sendPhoto"\n' "$TELEGRAM_BOT_TOKEN") \
         --data-urlencode "chat_id=${target_cid}" \
         --data-urlencode "photo=${photo}" \
-        --data-urlencode "caption=[$(_esc "${TELEGRAM_SERVER_LABEL:-MTProxyMax}")] ${caption}" \
+        --data-urlencode "caption=[$(_esc "${TELEGRAM_SERVER_LABEL:-MTProxyWidum}")] ${caption}" \
         --data-urlencode "parse_mode=Markdown" >/dev/null 2>&1
 }
 
@@ -11032,7 +11142,7 @@ get_uptime() {
         [ -n "$up" ] && [ "$up" -gt 0 ] 2>/dev/null && { echo "$up"; return; }
     fi
     # Fallback: docker inspect
-    local sa; sa=$(docker inspect --format '{{.State.StartedAt}}' mtproxymax 2>/dev/null)
+    local sa; sa=$(docker inspect --format '{{.State.StartedAt}}' mtproxywidum 2>/dev/null)
     [ -z "$sa" ] && echo 0 && return
     local se; se=$(_iso_to_epoch "$sa")
     [ "$se" -gt 0 ] 2>/dev/null && echo $(( $(date +%s) - se )) || echo 0
@@ -11288,7 +11398,7 @@ _process_cmd() {
     # Public user or unauthenticated commands
     case "$text" in
         /start|/start@*)
-            tg_send_to "$chat_id" "🛡️ *Welcome to MTProxyMax Self-Service Portal (${VERSION})*\n\n👋 Hello! You can use this bot to check your proxy status, data limits, and connection links without admin assistance.\n\n📱 *Public Commands Available:*\n  /my_status <label> — Check your data quota & expiration\n  /redeem <code> [label] — Redeem a gift code / voucher\n  /voucher <code> [label] — Alias for /redeem\n  /support <message> — Send a support request to server admins"
+            tg_send_to "$chat_id" "🛡️ *Welcome to MTProxyWidum Self-Service Portal (${VERSION})*\n\n👋 Hello! You can use this bot to check your proxy status, data limits, and connection links without admin assistance.\n\n📱 *Public Commands Available:*\n  /my_status <label> — Check your data quota & expiration\n  /redeem <code> [label] — Redeem a gift code / voucher\n  /voucher <code> [label] — Alias for /redeem\n  /support <message> — Send a support request to server admins"
             return
             ;;
         /my_status\ *|/my_status@*\ *)
@@ -11314,7 +11424,7 @@ _process_cmd() {
             local vlabel=$(echo "$text" | awk '{print $3}')
             [ -z "$vcode" ] && { tg_send_to "$chat_id" "❌ Usage: /voucher <code> [optional_label]"; return; }
             [ -z "$vlabel" ] && vlabel="tg_${chat_id}"
-            if "${INSTALL_DIR}/mtproxymax" voucher redeem "$vcode" "$vlabel" &>/dev/null; then
+            if "${INSTALL_DIR}/mtproxywidum" voucher redeem "$vcode" "$vlabel" &>/dev/null; then
                 load_tg_settings
                 local ip; ip=$(get_cached_ip)
                 local ns=$(grep "^${vlabel}|" "$SECRETS_FILE" 2>/dev/null | head -1 | cut -d'|' -f2)
@@ -11339,7 +11449,7 @@ _process_cmd() {
             local vlabel=$(echo "$text" | awk '{print $3}')
             [ -z "$vcode" ] && { tg_send_to "$chat_id" "❌ Usage: /redeem <code> [optional_label]"; return; }
             [ -z "$vlabel" ] && vlabel="tg_${chat_id}"
-            if "${INSTALL_DIR}/mtproxymax" voucher redeem "$vcode" "$vlabel" &>/dev/null; then
+            if "${INSTALL_DIR}/mtproxywidum" voucher redeem "$vcode" "$vlabel" &>/dev/null; then
                 load_tg_settings
                 local ip; ip=$(get_cached_ip)
                 local ns=$(grep "^${vlabel}|" "$SECRETS_FILE" 2>/dev/null | head -1 | cut -d'|' -f2)
@@ -11368,12 +11478,12 @@ _process_cmd() {
                     local cnt=$(echo "$text" | awk '{print $3}')
                     local qta=$(echo "$text" | awk '{print $4}')
                     local dys=$(echo "$text" | awk '{print $5}')
-                    "${INSTALL_DIR}/mtproxymax" voucher create "${cnt:-1}" "${qta:-10G}" "${dys:-30}" &>/dev/null
-                    local vout=$("${INSTALL_DIR}/mtproxymax" voucher list active | tail -n +3 | head -n "${cnt:-1}")
+                    "${INSTALL_DIR}/mtproxywidum" voucher create "${cnt:-1}" "${qta:-10G}" "${dys:-30}" &>/dev/null
+                    local vout=$("${INSTALL_DIR}/mtproxywidum" voucher list active | tail -n +3 | head -n "${cnt:-1}")
                     tg_send "🎟 *Generated Vouchers*\n\`\`\`\n${vout}\n\`\`\`"
                     ;;
                 list)
-                    local vout=$("${INSTALL_DIR}/mtproxymax" voucher list active | head -n 25)
+                    local vout=$("${INSTALL_DIR}/mtproxywidum" voucher list active | head -n 25)
                     tg_send "📋 *Active Vouchers*\n\`\`\`\n${vout}\n\`\`\`"
                     ;;
                 *)
@@ -11442,7 +11552,7 @@ _process_cmd() {
             local label=$(echo "$text" | awk '{print $2}')
             [ -z "$label" ] && tg_send "❌ Usage: /mp\\_add <label>" && return
             [[ "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || { tg_send "❌ Invalid label (use a-z, 0-9, \\_, -)"; return; }
-            "${INSTALL_DIR}/mtproxymax" secret add "$label" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" secret add "$label" &>/dev/null
             if [ $? -eq 0 ]; then
                 load_tg_settings
                 local ip; ip=$(get_cached_ip)
@@ -11470,7 +11580,7 @@ _process_cmd() {
                 tg_send "❌ Cannot remove the last secret"
                 return
             fi
-            "${INSTALL_DIR}/mtproxymax" secret remove "$label" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" secret remove "$label" &>/dev/null
             if [ $? -eq 0 ]; then
                 tg_send "✅ Secret *$(_esc "$label")* revoked/removed"
             else
@@ -11481,7 +11591,7 @@ _process_cmd() {
             local label=$(echo "$text" | awk '{print $2}')
             [ -z "$label" ] && tg_send "❌ Usage: /mp\\_rotate <label>" && return
             [[ "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || { tg_send "❌ Invalid label"; return; }
-            "${INSTALL_DIR}/mtproxymax" secret rotate "$label" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" secret rotate "$label" &>/dev/null
             if [ $? -eq 0 ]; then
                 load_tg_settings
                 local ip; ip=$(get_cached_ip)
@@ -11498,7 +11608,7 @@ _process_cmd() {
         /mp_restart|/mp_restart@*)
             [ "$role" != "superadmin" ] && { tg_send "⛔ Permission denied: superadmin required."; return; }
             tg_send "🔄 Restarting proxy..."
-            "${INSTALL_DIR}/mtproxymax" restart &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" restart &>/dev/null
             sleep 3
             if is_running; then
                 tg_send "✅ Proxy restarted successfully"
@@ -11510,7 +11620,7 @@ _process_cmd() {
             local label=$(echo "$text" | awk '{print $2}')
             [ -z "$label" ] && tg_send "❌ Usage: /mp\\_enable <label>" && return
             [[ "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || { tg_send "❌ Invalid label"; return; }
-            "${INSTALL_DIR}/mtproxymax" secret enable "$label" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" secret enable "$label" &>/dev/null
             if [ $? -eq 0 ]; then
                 tg_send "✅ Secret *$(_esc "$label")* enabled"
             else
@@ -11521,7 +11631,7 @@ _process_cmd() {
             local label=$(echo "$text" | awk '{print $2}')
             [ -z "$label" ] && tg_send "❌ Usage: /mp\\_disable <label>" && return
             [[ "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || { tg_send "❌ Invalid label"; return; }
-            "${INSTALL_DIR}/mtproxymax" secret disable "$label" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" secret disable "$label" &>/dev/null
             if [ $? -eq 0 ]; then
                 tg_send "✅ Secret *$(_esc "$label")* disabled"
             else
@@ -11530,7 +11640,7 @@ _process_cmd() {
             ;;
         /mp_health|/mp_health@*)
             local health_out
-            health_out=$("${INSTALL_DIR}/mtproxymax" health 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | head -20) || true
+            health_out=$("${INSTALL_DIR}/mtproxywidum" health 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | head -20) || true
             local status_icon="🟢"
             echo "$health_out" | grep -qi "fail\|error\|down" && status_icon="🔴"
             tg_send "${status_icon} *Health Check*\n\n\`\`\`\n${health_out}\n\`\`\`"
@@ -11555,7 +11665,7 @@ _process_cmd() {
             [ "$role" != "superadmin" ] && { tg_send "⛔ Permission denied: superadmin required."; return; }
             tg_send "🔍 Checking for updates..."
             local update_out
-            update_out=$("${INSTALL_DIR}/mtproxymax" update </dev/null 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tail -5)
+            update_out=$("${INSTALL_DIR}/mtproxywidum" update </dev/null 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tail -5)
             if [ -n "$update_out" ]; then
                 tg_send "📋 Update check:\n\`\`\`\n${update_out}\n\`\`\`"
             else
@@ -11587,14 +11697,14 @@ _process_cmd() {
             local sl_exp=$(echo "$args" | awk '{print $5}')
             [ -z "$sl_label" ] && tg_send "❌ Usage: /mp\\_setlimit <label> <conns> <ips> <quota> [expires]\nExample: /mp\\_setlimit alice 100 5 5G 2026-12-31" && return
             [[ "$sl_label" =~ ^[a-zA-Z0-9_-]+$ ]] || { tg_send "❌ Invalid label"; return; }
-            if "${INSTALL_DIR}/mtproxymax" secret setlimits "$sl_label" "${sl_conns:-0}" "${sl_ips:-0}" "${sl_quota:-0}" "${sl_exp:-}" &>/dev/null; then
+            if "${INSTALL_DIR}/mtproxywidum" secret setlimits "$sl_label" "${sl_conns:-0}" "${sl_ips:-0}" "${sl_quota:-0}" "${sl_exp:-}" &>/dev/null; then
                 tg_send "✅ Limits updated for *$(_esc "$sl_label")*\nConns: ${sl_conns:-0} | IPs: ${sl_ips:-0} | Quota: ${sl_quota:-0}"
             else
                 tg_send "❌ Failed to set limits for *$(_esc "$sl_label")* — check label exists"
             fi
             ;;
         /mp_fleet|/mp_fleet@*)
-            local fleet_out; fleet_out=$("${INSTALL_DIR}/mtproxymax" fleet status 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g')
+            local fleet_out; fleet_out=$("${INSTALL_DIR}/mtproxywidum" fleet status 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g')
             [ -z "$fleet_out" ] && fleet_out="No multi-server fleet telemetry collected yet."
             tg_send "🌐 *Global Federation Fleet Summary*\n\`\`\`\n${fleet_out}\n\`\`\`"
             ;;
@@ -11626,11 +11736,11 @@ _process_cmd() {
             sub="${sub:-status}"
             case "$sub" in
                 on|enable)
-                    "${INSTALL_DIR}/mtproxymax" lockdown on &>/dev/null
+                    "${INSTALL_DIR}/mtproxywidum" lockdown on &>/dev/null
                     tg_send "🚨 *EMERGENCY LOCKDOWN ACTIVATED*\nKernel SYN Shield: ACTIVE\nStealth Preset: ULTRA\nMSS Clamping: ACTIVE"
                     ;;
                 off|disable)
-                    "${INSTALL_DIR}/mtproxymax" lockdown off &>/dev/null
+                    "${INSTALL_DIR}/mtproxywidum" lockdown off &>/dev/null
                     tg_send "✅ *Lockdown Deactivated*\nServer restored to normal operating posture."
                     ;;
                 *)
@@ -11682,11 +11792,11 @@ _process_cmd() {
         /mp_broadcast\ *|/mp_broadcast@*\ *)
             local bmsg; bmsg=$(echo "$text" | cut -d' ' -f2-)
             [ -z "$bmsg" ] || [ "$bmsg" = "/mp_broadcast" ] && { tg_send "❌ Usage: /mp_broadcast <message>"; return; }
-            "${INSTALL_DIR}/mtproxymax" broadcast "$bmsg" &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" broadcast "$bmsg" &>/dev/null
             tg_send "📢 Broadcast dispatched to all users."
             ;;
         /mp_help|/mp_help@*)
-            tg_send "📋 *MTProxyMax Commands (${VERSION})*\n\n*Public Self-Service:*\n/start — Self-service onboarding\n/my\_status <label> — Check data quota & expiry\n/voucher <code> — Redeem voucher code\n/support <msg> — Send ticket to helpdesk\n\n*Admin Control Plane:*\n/mp\_fleet — Global Federation Fleet Dashboard\n/mp\_voucher create <cnt> <qta> <dys> — Generate vouchers\n/mp\_voucher list — List vouchers\n/mp\_status — Proxy status\n/mp\_secrets — List secrets\n/mp\_link — Get proxy links + QR\n/mp\_add <label> — Add secret\n/mp\_remove / /mp\_revoke <label> — Remove secret\n/mp\_rotate <label> — Rotate secret\n/mp\_enable <label> — Enable secret\n/mp\_disable <label> — Disable secret\n/mp\_limits — Show user limits\n/mp\_setlimit — Set user limits\n/mp\_upstreams — List upstreams\n/mp\_traffic — Traffic report\n/mp\_health — Health check\n/mp\_lockdown [on|off] — Emergency shield\n/mp\_digest — System digest report\n/mp\_broadcast <msg> — Broadcast to all users\n/reply <chat\_id> <msg> — Reply to support ticket\n/mp\_restart — Restart proxy\n/mp\_update — Check for updates\n/mp\_help — This help"
+            tg_send "📋 *MTProxyWidum Commands (${VERSION})*\n\n*Public Self-Service:*\n/start — Self-service onboarding\n/my\_status <label> — Check data quota & expiry\n/voucher <code> — Redeem voucher code\n/support <msg> — Send ticket to helpdesk\n\n*Admin Control Plane:*\n/mp\_fleet — Global Federation Fleet Dashboard\n/mp\_voucher create <cnt> <qta> <dys> — Generate vouchers\n/mp\_voucher list — List vouchers\n/mp\_status — Proxy status\n/mp\_secrets — List secrets\n/mp\_link — Get proxy links + QR\n/mp\_add <label> — Add secret\n/mp\_remove / /mp\_revoke <label> — Remove secret\n/mp\_rotate <label> — Rotate secret\n/mp\_enable <label> — Enable secret\n/mp\_disable <label> — Disable secret\n/mp\_limits — Show user limits\n/mp\_setlimit — Set user limits\n/mp\_upstreams — List upstreams\n/mp\_traffic — Traffic report\n/mp\_health — Health check\n/mp\_lockdown [on|off] — Emergency shield\n/mp\_digest — System digest report\n/mp\_broadcast <msg> — Broadcast to all users\n/reply <chat\_id> <msg> — Reply to support ticket\n/mp\_restart — Restart proxy\n/mp\_update — Check for updates\n/mp\_help — This help"
             ;;
     esac
 }
@@ -11716,7 +11826,7 @@ while true; do
     if [ $((_now - _last_traffic_update)) -ge 60 ] && is_running; then
         _last_traffic_update=$_now
         update_traffic 2>/dev/null
-        [ "${PORTAL_ENABLED:-false}" = "true" ] && "${INSTALL_DIR}/mtproxymax" portal generate &>/dev/null
+        [ "${PORTAL_ENABLED:-false}" = "true" ] && "${INSTALL_DIR}/mtproxywidum" portal generate &>/dev/null
 
         # Connection log: append per-user activity (delta = current cumulative - previous cumulative)
         _connlog="${INSTALL_DIR}/connection.log"
@@ -11745,7 +11855,7 @@ while true; do
         _last_enforcement=$_now
 
         # Periodic tasks: monthly quota reset, auto-rotate, backup autoclean
-        "${INSTALL_DIR}/mtproxymax" sweep &>/dev/null &
+        "${INSTALL_DIR}/mtproxywidum" sweep &>/dev/null &
 
         # Quota enforcement (auto-disable secrets that exceeded quota)
         _quota_file="${INSTALL_DIR}/relay_stats/.quota_alerts_sent"
@@ -11758,8 +11868,8 @@ while true; do
             pct=$(( (total_bytes * 100) / _q ))
             if [ "$pct" -ge 100 ] 2>/dev/null; then
                 if ! grep -q "^${label}|100$" "$_quota_file" 2>/dev/null; then
-                    if "${INSTALL_DIR}/mtproxymax" secret disable "$label" &>/dev/null; then
-                        [ "$TELEGRAM_ENABLED" = "true" ] && tg_send "🔴 *Quota Exceeded — Auto-disabled*\n\nSecret *$(_esc "$label")* used $(format_bytes $total_bytes) of $(format_bytes $_q) (${pct}%)\n\nRe-enable: \`mtproxymax secret reenable $label\`"
+                    if "${INSTALL_DIR}/mtproxywidum" secret disable "$label" &>/dev/null; then
+                        [ "$TELEGRAM_ENABLED" = "true" ] && tg_send "🔴 *Quota Exceeded — Auto-disabled*\n\nSecret *$(_esc "$label")* used $(format_bytes $total_bytes) of $(format_bytes $_q) (${pct}%)\n\nRe-enable: \`mtproxywidum secret reenable $label\`"
                     else
                         [ "$TELEGRAM_ENABLED" = "true" ] && tg_send "⚠️ *Quota Exceeded*\n\nSecret *$(_esc "$label")* used $(format_bytes $total_bytes) of $(format_bytes $_q) (${pct}%) — cannot auto-disable (last active secret)"
                     fi
@@ -11809,9 +11919,9 @@ while true; do
     # Health check every 5 minutes
     if [ $((_now - _last_health)) -ge 300 ]; then
         _last_health=$_now
-        if [ "$TELEGRAM_ALERTS_ENABLED" = "true" ] && ! is_running && [ ! -f /tmp/.mtproxymax_stopped ]; then
+        if [ "$TELEGRAM_ALERTS_ENABLED" = "true" ] && ! is_running && [ ! -f /tmp/.mtproxywidum_stopped ]; then
             tg_send "🔴 *Alert*: Proxy is down! Attempting auto-restart..."
-            "${INSTALL_DIR}/mtproxymax" start &>/dev/null
+            "${INSTALL_DIR}/mtproxywidum" start &>/dev/null
             sleep 5
             if is_running; then
                 tg_send "✅ Proxy auto-recovered"
@@ -11844,15 +11954,15 @@ setup_telegram_service() {
 
     # Create systemd service
     if command -v systemctl &>/dev/null; then
-        cat > /etc/systemd/system/mtproxymax-telegram.service << 'SERVICE_EOF'
+        cat > /etc/systemd/system/mtproxywidum-telegram.service << 'SERVICE_EOF'
 [Unit]
-Description=MTProxyMax Telegram Bot Service
+Description=MTProxyWidum Telegram Bot Service
 After=network-online.target docker.service
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/bin/bash /opt/mtproxymax/mtproxymax-telegram.sh
+ExecStart=/bin/bash /opt/mtproxywidum/mtproxywidum-telegram.sh
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -11863,8 +11973,8 @@ WantedBy=multi-user.target
 SERVICE_EOF
 
         systemctl daemon-reload
-        systemctl enable mtproxymax-telegram.service 2>/dev/null
-        systemctl restart mtproxymax-telegram.service 2>/dev/null
+        systemctl enable mtproxywidum-telegram.service 2>/dev/null
+        systemctl restart mtproxywidum-telegram.service 2>/dev/null
         log_success "Telegram bot service started"
     fi
 }
@@ -11887,9 +11997,9 @@ save_replication() {
     tmp=$(_mktemp) || { log_error "Cannot create temp file"; return 1; }
 
     {
-        echo "# MTProxyMax Replication Slaves — v${VERSION}"
+        echo "# MTProxyWidum Replication Slaves — v${VERSION}"
         echo "# Format: HOST|PORT|LABEL|ENABLED|LAST_SYNC|STATUS"
-        echo "# DO NOT EDIT MANUALLY — use 'mtproxymax replication' commands"
+        echo "# DO NOT EDIT MANUALLY — use 'mtproxywidum replication' commands"
         local i
         for i in "${!REPL_HOSTS[@]}"; do
             echo "${REPL_HOSTS[$i]}|${REPL_PORTS[$i]}|${REPL_LABELS[$i]}|${REPL_ENABLED[$i]}|${REPL_LAST_SYNC[$i]}|${REPL_STATUS[$i]}"
@@ -11898,7 +12008,7 @@ save_replication() {
 
     chmod 600 "$tmp"
     # Serialise with sync-timer flock to prevent lost-update races with save_sync_status()
-    exec 201>"${INSTALL_DIR:-/opt/mtproxymax}/.mtproxymax-sync.lock" 2>/dev/null || true
+    exec 201>"${INSTALL_DIR:-/opt/mtproxywidum}/.mtproxywidum-sync.lock" 2>/dev/null || true
     if command -v flock &>/dev/null; then
         flock -w 5 201 2>/dev/null || { log_error "Could not acquire lock for replication config"; rm -f "$tmp"; exec 201>&- 2>/dev/null; return 1; }
     fi
@@ -11941,7 +12051,7 @@ replication_add() {
 
     if [ "${REPLICATION_ROLE}" = "slave" ]; then
         log_error "This server is a slave — only a master can register peers"
-        log_info "Run: mtproxymax replication setup  to change role"
+        log_info "Run: mtproxywidum replication setup  to change role"
         return 1
     fi
 
@@ -12038,7 +12148,7 @@ replication_list() {
     load_replication
 
     if [ ${#REPL_HOSTS[@]} -eq 0 ]; then
-        log_info "No slaves configured. Run: mtproxymax replication add <host>"
+        log_info "No slaves configured. Run: mtproxywidum replication add <host>"
         return 0
     fi
 
@@ -12071,29 +12181,29 @@ replication_list() {
 
 # Generate the self-contained sync daemon script
 replication_generate_sync_script() {
-    local script_path="${INSTALL_DIR}/mtproxymax-sync.sh"
+    local script_path="${INSTALL_DIR}/mtproxywidum-sync.sh"
 
     cat > "$script_path" << 'SYNC_SCRIPT_EOF'
 #!/bin/bash
-# MTProxyMax Replication Sync Script
+# MTProxyWidum Replication Sync Script
 # Auto-generated — do not edit manually
-# Managed by: mtproxymax replication
+# Managed by: mtproxywidum replication
 
-INSTALL_DIR="/opt/mtproxymax"
+INSTALL_DIR="/opt/mtproxywidum"
 SETTINGS_FILE="${INSTALL_DIR}/settings.conf"
 REPLICATION_FILE="${INSTALL_DIR}/replication.conf"
-LOCK_FILE="${INSTALL_DIR}/.mtproxymax-sync.lock"
+LOCK_FILE="${INSTALL_DIR}/.mtproxywidum-sync.lock"
 
 # Defaults (overridden by load_sync_settings)
 REPLICATION_ENABLED="false"
 REPLICATION_ROLE="standalone"
-REPLICATION_SSH_KEY_PATH="/opt/mtproxymax/.ssh/id_ed25519"
+REPLICATION_SSH_KEY_PATH="/opt/mtproxywidum/.ssh/id_ed25519"
 REPLICATION_SSH_PORT="22"
 REPLICATION_SSH_USER="root"
 REPLICATION_DELETE_EXTRA="true"
-REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,settings.conf,replication.conf,mtproxymax-telegram.sh,mtproxymax-sync.sh"
+REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,settings.conf,replication.conf,mtproxywidum-telegram.sh,mtproxywidum-sync.sh"
 REPLICATION_RESTART_ON_CHANGE="true"
-REPLICATION_LOG="/var/log/mtproxymax-sync.log"
+REPLICATION_LOG="/var/log/mtproxywidum-sync.log"
 
 load_sync_settings() {
     [ -f "$SETTINGS_FILE" ] || return
@@ -12143,10 +12253,10 @@ load_sync_replication() {
 }
 
 save_sync_status() {
-    local tmp; tmp=$(mktemp "${INSTALL_DIR}/.mtproxymax-sync.XXXXXX" 2>/dev/null) || return 1
+    local tmp; tmp=$(mktemp "${INSTALL_DIR}/.mtproxywidum-sync.XXXXXX" 2>/dev/null) || return 1
     chmod 600 "$tmp"
     {
-        echo "# MTProxyMax Replication Slaves"
+        echo "# MTProxyWidum Replication Slaves"
         echo "# Format: HOST|PORT|LABEL|ENABLED|LAST_SYNC|STATUS"
         local i
         for i in "${!REPL_HOSTS[@]}"; do
@@ -12208,7 +12318,7 @@ do_sync() {
             local r_out r_rc
             r_out=$(ssh -i "${ssh_key}" -p "${port}" \
                 -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new \
-                "${REPLICATION_SSH_USER}@${host}" "/usr/local/bin/mtproxymax restart 2>&1 || docker restart mtproxymax 2>&1" 2>&1)
+                "${REPLICATION_SSH_USER}@${host}" "/usr/local/bin/mtproxywidum restart 2>&1 || docker restart mtproxywidum 2>&1" 2>&1)
             r_rc=$?
             if [ "${r_rc:--1}" -eq 0 ]; then
                 log_sync "RESTART [${label}/${host}]: Container restarted"
@@ -12273,26 +12383,26 @@ setup_replication_service() {
 
     if ! command -v systemctl &>/dev/null; then
         log_warn "systemd not found. Add cron manually:"
-        echo "  * * * * * /bin/bash ${INSTALL_DIR}/mtproxymax-sync.sh"
+        echo "  * * * * * /bin/bash ${INSTALL_DIR}/mtproxywidum-sync.sh"
         return 1
     fi
 
-    cat > /etc/systemd/system/mtproxymax-sync.service << 'REPL_SERVICE_EOF'
+    cat > /etc/systemd/system/mtproxywidum-sync.service << 'REPL_SERVICE_EOF'
 [Unit]
-Description=MTProxyMax Replication Sync
+Description=MTProxyWidum Replication Sync
 After=network-online.target docker.service
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash /opt/mtproxymax/mtproxymax-sync.sh
+ExecStart=/bin/bash /opt/mtproxywidum/mtproxywidum-sync.sh
 StandardOutput=journal
 StandardError=journal
 REPL_SERVICE_EOF
 
-    cat > /etc/systemd/system/mtproxymax-sync.timer << REPL_TIMER_EOF
+    cat > /etc/systemd/system/mtproxywidum-sync.timer << REPL_TIMER_EOF
 [Unit]
-Description=MTProxyMax Replication Sync Timer
+Description=MTProxyWidum Replication Sync Timer
 
 [Timer]
 OnBootSec=30s
@@ -12304,24 +12414,24 @@ WantedBy=timers.target
 REPL_TIMER_EOF
 
     systemctl daemon-reload
-    systemctl enable mtproxymax-sync.timer 2>/dev/null
-    systemctl start mtproxymax-sync.timer 2>/dev/null
+    systemctl enable mtproxywidum-sync.timer 2>/dev/null
+    systemctl start mtproxywidum-sync.timer 2>/dev/null
     log_success "Replication timer started (every ${REPLICATION_SYNC_INTERVAL}s)"
 }
 
 stop_replication_service() {
     if command -v systemctl &>/dev/null; then
-        systemctl stop mtproxymax-sync.timer 2>/dev/null || true
-        systemctl disable mtproxymax-sync.timer 2>/dev/null || true
+        systemctl stop mtproxywidum-sync.timer 2>/dev/null || true
+        systemctl disable mtproxywidum-sync.timer 2>/dev/null || true
         log_info "Replication timer stopped"
     fi
 }
 
 remove_replication_service() {
     stop_replication_service
-    rm -f /etc/systemd/system/mtproxymax-sync.service
-    rm -f /etc/systemd/system/mtproxymax-sync.timer
-    rm -f "${INSTALL_DIR}/mtproxymax-sync.sh"
+    rm -f /etc/systemd/system/mtproxywidum-sync.service
+    rm -f /etc/systemd/system/mtproxywidum-sync.timer
+    rm -f "${INSTALL_DIR}/mtproxywidum-sync.sh"
     command -v systemctl &>/dev/null && systemctl daemon-reload 2>/dev/null || true
 }
 
@@ -12372,7 +12482,7 @@ replication_setup_wizard() {
             _hint_ip=$(hostname -I 2>/dev/null | awk '{print $1}')
             [ -z "$_hint_ip" ] && _hint_ip=$(ip -4 route get 1 2>/dev/null | awk '{print $7; exit}')
             _hint_host=$(hostname -s 2>/dev/null)
-            echo -e "    ${CYAN}mtproxymax replication add ${_hint_ip:-<YOUR_IP>} 22${_hint_host:+ ${_hint_host}}${NC}"
+            echo -e "    ${CYAN}mtproxywidum replication add ${_hint_ip:-<YOUR_IP>} 22${_hint_host:+ ${_hint_host}}${NC}"
             echo ""
             echo -e "  Ensure Master's SSH public key is in: ${DIM}~/.ssh/authorized_keys${NC}"
             echo ""
@@ -12406,7 +12516,7 @@ replication_setup_wizard() {
     if [ ! -f "${key_path}" ]; then
         mkdir -p "${REPLICATION_SSH_DIR}"
         chmod 700 "${REPLICATION_SSH_DIR}"
-        ssh-keygen -t ed25519 -f "${key_path}" -N "" -C "mtproxymax-replication" &>/dev/null
+        ssh-keygen -t ed25519 -f "${key_path}" -N "" -C "mtproxywidum-replication" &>/dev/null
         chmod 600 "${key_path}"
         log_success "ed25519 key generated"
     fi
@@ -12475,7 +12585,7 @@ replication_setup_wizard() {
             replication_add "$slave_host" "$slave_port" "$slave_label"
         else
             echo -e "${RED}FAILED${NC}"
-            log_error "SSH failed — slave not added. Fix and run: mtproxymax replication add ${slave_host} ${slave_port} ${slave_label}"
+            log_error "SSH failed — slave not added. Fix and run: mtproxywidum replication add ${slave_host} ${slave_port} ${slave_label}"
         fi
 
         echo ""
@@ -12546,7 +12656,7 @@ replication_status() {
 
     local t_state="inactive"
     if command -v systemctl &>/dev/null; then
-        t_state=$(systemctl is-active mtproxymax-sync.timer 2>/dev/null)
+        t_state=$(systemctl is-active mtproxywidum-sync.timer 2>/dev/null)
         t_state="${t_state:-inactive}"
         echo -e "  Timer:    $([ "$t_state" = "active" ] && echo "${GREEN}${t_state}${NC}" || echo "${DIM}${t_state}${NC}")"
     fi
@@ -12592,7 +12702,7 @@ replication_test() {
         result=$(ssh -i "${REPLICATION_SSH_KEY_PATH}" -p "${port}" \
             -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new \
             "${REPLICATION_SSH_USER}@${host}" \
-            "docker ps --filter name=mtproxymax --format '{{.Status}}' 2>/dev/null; echo ssh_ok" 2>&1)
+            "docker ps --filter name=mtproxywidum --format '{{.Status}}' 2>/dev/null; echo ssh_ok" 2>&1)
 
         if echo "$result" | grep -q "ssh_ok"; then
             local docker_status
@@ -12616,16 +12726,16 @@ replication_sync_now() {
     # Always regenerate sync script to ensure it reflects the current version
     replication_generate_sync_script
     if command -v systemctl &>/dev/null && \
-        systemctl is-active mtproxymax-sync.timer &>/dev/null; then
+        systemctl is-active mtproxywidum-sync.timer &>/dev/null; then
         echo -e "  Triggering sync via systemd..."
-        systemctl start mtproxymax-sync.service
+        systemctl start mtproxywidum-sync.service
         echo -e "  ${GREEN}Done.${NC}"
-        echo -e "  View logs: ${DIM}mtproxymax replication logs${NC}"
-    elif [ -f "${INSTALL_DIR}/mtproxymax-sync.sh" ]; then
+        echo -e "  View logs: ${DIM}mtproxywidum replication logs${NC}"
+    elif [ -f "${INSTALL_DIR}/mtproxywidum-sync.sh" ]; then
         echo -e "  Running sync script directly..."
-        bash "${INSTALL_DIR}/mtproxymax-sync.sh"
+        bash "${INSTALL_DIR}/mtproxywidum-sync.sh"
     else
-        log_error "Sync script not found. Run: mtproxymax replication setup"
+        log_error "Sync script not found. Run: mtproxywidum replication setup"
         return 1
     fi
     echo ""
@@ -12646,7 +12756,7 @@ replication_show_logs() {
         echo ""
         echo -e "  ${BOLD}Systemd journal (last 10 entries):${NC}"
         echo ""
-        journalctl -u mtproxymax-sync.service --no-pager -n 10 2>/dev/null || true
+        journalctl -u mtproxywidum-sync.service --no-pager -n 10 2>/dev/null || true
     fi
     echo ""
 }
@@ -12689,10 +12799,10 @@ replication_promote() {
     log_success "Role changed to: Master"
     if [ ! -f "${REPLICATION_SSH_KEY_PATH}" ]; then
         log_warn "No SSH key found at ${REPLICATION_SSH_KEY_PATH}"
-        log_info "Run 'mtproxymax replication setup' to generate a key and configure slaves"
+        log_info "Run 'mtproxywidum replication setup' to generate a key and configure slaves"
     fi
-    log_info "Add slaves:  mtproxymax replication add <host>"
-    log_info "Enable sync: mtproxymax replication enable"
+    log_info "Add slaves:  mtproxywidum replication add <host>"
+    log_info "Enable sync: mtproxywidum replication enable"
 }
 
 
@@ -12701,15 +12811,15 @@ replication_promote() {
 run_installer() {
     show_banner
 
-    echo -e "  ${BRIGHT_GREEN}Welcome to MTProxyMax — the ultimate Telegram proxy manager${NC}"
+    echo -e "  ${BRIGHT_GREEN}Welcome to MTProxyWidum — the ultimate Telegram proxy manager${NC}"
     echo -e "  ${DIM}by SamNet Technologies${NC}"
     echo ""
 
     check_root "$@"
 
     # Check if already installed
-    if [ -f "${INSTALL_DIR}/mtproxymax" ]; then
-        echo -e "  ${YELLOW}MTProxyMax is already installed.${NC}"
+    if [ -f "${INSTALL_DIR}/mtproxywidum" ]; then
+        echo -e "  ${YELLOW}MTProxyWidum is already installed.${NC}"
         echo ""
         echo -e "  ${DIM}[1]${NC} Open management menu"
         echo -e "  ${DIM}[2]${NC} Reinstall"
@@ -12901,12 +13011,12 @@ run_installer() {
     # Copy script to install dir
     local script_source="${BASH_SOURCE[0]}"
     if [ -f "$script_source" ]; then
-        cp "$script_source" "${INSTALL_DIR}/mtproxymax"
-        chmod +x "${INSTALL_DIR}/mtproxymax"
+        cp "$script_source" "${INSTALL_DIR}/mtproxywidum"
+        chmod +x "${INSTALL_DIR}/mtproxywidum"
     fi
 
     # Create symlink
-    ln -sf "${INSTALL_DIR}/mtproxymax" /usr/local/bin/mtproxymax
+    ln -sf "${INSTALL_DIR}/mtproxywidum" /usr/local/bin/mtproxywidum
 
     # Start proxy
     echo ""
@@ -12914,7 +13024,7 @@ run_installer() {
     echo ""
     run_proxy_container || {
         log_error "Failed to start proxy"
-        echo -e "  ${DIM}Check: docker logs mtproxymax${NC}"
+        echo -e "  ${DIM}Check: docker logs mtproxywidum${NC}"
     }
 
     # Setup autostart
@@ -12945,9 +13055,9 @@ run_installer() {
 
 setup_autostart() {
     if command -v systemctl &>/dev/null; then
-        cat > /etc/systemd/system/mtproxymax.service << 'AUTOSTART_EOF'
+        cat > /etc/systemd/system/mtproxywidum.service << 'AUTOSTART_EOF'
 [Unit]
-Description=MTProxyMax Telegram Proxy
+Description=MTProxyWidum Telegram Proxy
 After=network-online.target docker.service
 Wants=network-online.target
 Requires=docker.service
@@ -12955,15 +13065,15 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/bin/mtproxymax start
-ExecStop=/usr/local/bin/mtproxymax stop
+ExecStart=/usr/local/bin/mtproxywidum start
+ExecStop=/usr/local/bin/mtproxywidum stop
 
 [Install]
 WantedBy=multi-user.target
 AUTOSTART_EOF
 
         systemctl daemon-reload
-        systemctl enable mtproxymax.service 2>/dev/null
+        systemctl enable mtproxywidum.service 2>/dev/null
         log_success "Auto-start enabled (systemd)"
     fi
 }
@@ -13006,12 +13116,12 @@ show_install_summary() {
     draw_box_sep "$w"
     draw_box_center "${BOLD}COMMANDS & ANTI-DPI SUITE${NC}" "$w"
     draw_box_empty "$w"
-    draw_box_line "  ${GREEN}mtproxymax${NC}              Open TUI Menu -> ${CYAN}[p] Performance Suite${NC}" "$w"
-    draw_box_line "  ${GREEN}mtproxymax status${NC}       Show proxy status & live health" "$w"
-    draw_box_line "  ${GREEN}mtproxymax secret add${NC}   Add a new user secret" "$w"
-    draw_box_line "  ${GREEN}mtproxymax bbr on${NC}       Toggle BBRv3 & ECN Network Booster" "$w"
-    draw_box_line "  ${GREEN}mtproxymax shield on${NC}    Toggle Anti-DPI Packet Padding Shield" "$w"
-    draw_box_line "  ${GREEN}mtproxymax syn-shield on${NC} Toggle Kernel SYN Flood Tarpit Shield" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum${NC}              Open TUI Menu -> ${CYAN}[p] Performance Suite${NC}" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum status${NC}       Show proxy status & live health" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum secret add${NC}   Add a new user secret" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum bbr on${NC}       Toggle BBRv3 & ECN Network Booster" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum shield on${NC}    Toggle Anti-DPI Packet Padding Shield" "$w"
+    draw_box_line "  ${GREEN}mtproxywidum syn-shield on${NC} Toggle Kernel SYN Flood Tarpit Shield" "$w"
     draw_box_empty "$w"
     draw_box_sep "$w"
     draw_box_line "  ${CYAN}💡 Tip: 13+ anti-DPI shields & boosters are available inside menu [p]${NC}" "$w"
@@ -13038,13 +13148,13 @@ show_install_summary() {
 uninstall() {
     clear_screen
     echo ""
-    echo -e "  ${BRIGHT_RED}${BOLD}UNINSTALL MTPROXYMAX${NC}"
+    echo -e "  ${BRIGHT_RED}${BOLD}UNINSTALL MTPROXYWIDUM${NC}"
     echo ""
     echo -e "  ${YELLOW}This will remove:${NC}"
     echo -e "  ${DIM}- Proxy container and Docker image${NC}"
     echo -e "  ${DIM}- All configuration and secrets${NC}"
     echo -e "  ${DIM}- Systemd services${NC}"
-    echo -e "  ${DIM}- /usr/local/bin/mtproxymax symlink${NC}"
+    echo -e "  ${DIM}- /usr/local/bin/mtproxywidum symlink${NC}"
     echo ""
     echo -e "  ${RED}Docker itself will NOT be removed.${NC}"
     echo ""
@@ -13059,7 +13169,7 @@ uninstall() {
     local export_choice
     read -r export_choice
     if [ "$export_choice" = "y" ] || [ "$export_choice" = "Y" ]; then
-        local export_file="${HOME}/mtproxymax-secrets-backup.txt"
+        local export_file="${HOME}/mtproxywidum-secrets-backup.txt"
         cp "$SECRETS_FILE" "$export_file" 2>/dev/null
         chmod 600 "$export_file" 2>/dev/null
         log_success "Secrets exported to ${export_file}"
@@ -13067,13 +13177,13 @@ uninstall() {
 
     echo ""
     log_info "Removing services..."
-    systemctl stop mtproxymax-telegram.service 2>/dev/null || true
-    systemctl disable mtproxymax-telegram.service 2>/dev/null || true
-    rm -f /etc/systemd/system/mtproxymax-telegram.service
+    systemctl stop mtproxywidum-telegram.service 2>/dev/null || true
+    systemctl disable mtproxywidum-telegram.service 2>/dev/null || true
+    rm -f /etc/systemd/system/mtproxywidum-telegram.service
 
-    systemctl stop mtproxymax.service 2>/dev/null || true
-    systemctl disable mtproxymax.service 2>/dev/null || true
-    rm -f /etc/systemd/system/mtproxymax.service
+    systemctl stop mtproxywidum.service 2>/dev/null || true
+    systemctl disable mtproxywidum.service 2>/dev/null || true
+    rm -f /etc/systemd/system/mtproxywidum.service
 
     systemctl daemon-reload 2>/dev/null || true
 
@@ -13099,10 +13209,10 @@ uninstall() {
 
     log_info "Removing files..."
     [ -n "$INSTALL_DIR" ] && [ "$INSTALL_DIR" != "/" ] && rm -rf "$INSTALL_DIR"
-    rm -f /usr/local/bin/mtproxymax
+    rm -f /usr/local/bin/mtproxywidum
 
     echo ""
-    log_success "MTProxyMax has been fully uninstalled"
+    log_success "MTProxyWidum has been fully uninstalled"
     echo ""
 }
 
@@ -13133,7 +13243,7 @@ load_instances() {
 
 save_instances() {
     local tmp; tmp=$(_mktemp) || return 1
-    echo "# MTProxyMax Instances — Format: PORT|METRICS_PORT|ENABLED|LABEL" > "$tmp"
+    echo "# MTProxyWidum Instances — Format: PORT|METRICS_PORT|ENABLED|LABEL" > "$tmp"
     local i
     for i in "${!INSTANCE_PORTS[@]}"; do
         echo "${INSTANCE_PORTS[$i]}|${INSTANCE_METRICS_PORTS[$i]}|${INSTANCE_ENABLED[$i]}|${INSTANCE_LABELS[$i]}" >> "$tmp"
@@ -13194,7 +13304,7 @@ instance_add() {
     generate_telemt_config
 
     # Start container
-    local cname="mtproxymax-${port}"
+    local cname="mtproxywidum-${port}"
     local _docker_args=(
         --name "$cname"
         --restart unless-stopped
@@ -13237,7 +13347,7 @@ instance_remove() {
     [ "$idx" = "-1" ] && { log_error "No instance on port ${port}"; return 1; }
 
     # Stop and remove container
-    local cname="mtproxymax-${port}"
+    local cname="mtproxywidum-${port}"
     docker stop "$cname" &>/dev/null || true
     docker rm -f "$cname" &>/dev/null || true
 
@@ -13278,7 +13388,7 @@ instance_list() {
         local i
         for i in "${!INSTANCE_PORTS[@]}"; do
             local port="${INSTANCE_PORTS[$i]}" label="${INSTANCE_LABELS[$i]}"
-            local cname="mtproxymax-${port}"
+            local cname="mtproxywidum-${port}"
             local st
             docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${cname}$" && st="${GREEN}running${NC}" || st="${RED}stopped${NC}"
             echo -e "  ${BOLD}${label}:${NC} port ${port} (container: ${cname})"
@@ -13293,7 +13403,7 @@ instance_list() {
 create_backup() {
     mkdir -p "$BACKUP_DIR"
     local ts; ts=$(date '+%Y%m%d-%H%M%S')
-    local backup_file="${BACKUP_DIR}/mtproxymax-${ts}.tar.gz"
+    local backup_file="${BACKUP_DIR}/mtproxywidum-${ts}.tar.gz"
 
     # Create metadata
     local meta_tmp; meta_tmp=$(_mktemp) || return 1
@@ -13324,7 +13434,7 @@ create_backup() {
 
 restore_backup() {
     local backup_file="$1"
-    [ -z "$backup_file" ] && { log_error "Usage: mtproxymax restore <backup_file>"; return 1; }
+    [ -z "$backup_file" ] && { log_error "Usage: mtproxywidum restore <backup_file>"; return 1; }
     [ ! -f "$backup_file" ] && { log_error "File not found: ${backup_file}"; return 1; }
 
     # Validate backup
@@ -13355,12 +13465,12 @@ restore_backup() {
     chmod 600 "${SECRETS_FILE}" 2>/dev/null
 
     log_success "Backup restored from: ${backup_file}"
-    log_info "Run 'mtproxymax restart' to apply changes"
+    log_info "Run 'mtproxywidum restart' to apply changes"
 }
 
 list_backups() {
     mkdir -p "$BACKUP_DIR"
-    local files; files=$(ls -1t "${BACKUP_DIR}"/mtproxymax-*.tar.gz 2>/dev/null) || true
+    local files; files=$(ls -1t "${BACKUP_DIR}"/mtproxywidum-*.tar.gz 2>/dev/null) || true
     if [ -z "$files" ]; then
         log_info "No backups found in ${BACKUP_DIR}"
         return
@@ -13377,10 +13487,10 @@ list_backups() {
 
 show_cli_help() {
     echo ""
-    echo -e "  ${BRIGHT_CYAN}${BOLD}MTProxyMax${NC} ${DIM}v${VERSION}${NC} — The Ultimate Telegram Proxy Manager"
+    echo -e "  ${BRIGHT_CYAN}${BOLD}MTProxyWidum${NC} ${DIM}v${VERSION}${NC} — The Ultimate Telegram Proxy Manager"
     echo -e "  ${DIM}by SamNet Technologies${NC}"
     echo ""
-    echo -e "  ${BOLD}Usage:${NC} mtproxymax <command> [options]"
+    echo -e "  ${BOLD}Usage:${NC} mtproxywidum <command> [options]"
     echo ""
     echo -e "  ${BOLD}Proxy Management:${NC}"
     echo -e "    ${GREEN}start${NC}              Start the proxy"
@@ -13477,6 +13587,7 @@ show_cli_help() {
     echo -e "    ${GREEN}connections${NC}             Show live active connections per user"
     echo -e "    ${GREEN}metrics${NC}                 Show live engine metrics (connections, upstream, users, ME)"
     echo -e "    ${GREEN}doctor${NC}                  Comprehensive diagnostics (port, TLS, secrets, disk, bot)"
+    echo -e "    ${GREEN}upload-test${NC}             Audit proxy upload mechanisms, socket write buffers & DC egress"
     echo -e "    ${GREEN}uptime${NC}                  One-line status (for scripts/monitoring)"
     echo -e "    ${GREEN}config${NC}                  Show current engine config"
     echo -e "    ${GREEN}notify${NC} <message>        Send custom Telegram notification"
@@ -13615,7 +13726,7 @@ show_cli_help() {
     echo -e "    ${GREEN}install${NC}                 Run installation wizard"
     echo -e "    ${GREEN}menu${NC}                    Open interactive menu"
     echo -e "    ${GREEN}update${NC}                  Check for updates"
-    echo -e "    ${GREEN}uninstall${NC}               Remove MTProxyMax"
+    echo -e "    ${GREEN}uninstall${NC}               Remove MTProxyWidum"
     echo -e "    ${GREEN}version${NC}                 Show version"
     echo -e "    ${GREEN}help${NC}                    Show this help"
     echo ""
@@ -13989,7 +14100,7 @@ cli_main() {
                     local field="$1"; shift 2>/dev/null || true
                     local value="$1"
                     if [ -z "$label" ] || [ -z "$field" ] || [ -z "$value" ]; then
-                        log_error "Usage: mtproxymax secret setlimit <label> conns|ips|quota|expires <value> [--no-restart]"
+                        log_error "Usage: mtproxywidum secret setlimit <label> conns|ips|quota|expires <value> [--no-restart]"
                         return 1
                     fi
                     case "$field" in
@@ -13997,7 +14108,7 @@ cli_main() {
                         ips)     secret_set_limits "$label" "" "$value" "" "" "$_no_restart" ;;
                         quota)   secret_set_limits "$label" "" "" "$value" "" "$_no_restart" ;;
                         expires) secret_set_limits "$label" "" "" "" "$value" "$_no_restart" ;;
-                        *) log_error "Usage: mtproxymax secret setlimit <label> conns|ips|quota|expires <value> [--no-restart]"; return 1 ;;
+                        *) log_error "Usage: mtproxywidum secret setlimit <label> conns|ips|quota|expires <value> [--no-restart]"; return 1 ;;
                     esac
                     ;;
                 setlimits)
@@ -14014,23 +14125,23 @@ cli_main() {
                     local sl_ips="${1:-0}"; shift 2>/dev/null || true
                     local sl_quota="${1:-0}"; shift 2>/dev/null || true
                     local sl_exp="${1:-}"
-                    [ -z "$label" ] && { log_error "Usage: mtproxymax secret setlimits <label> <conns> <ips> <quota> [expires] [--no-restart]"; return 1; }
+                    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret setlimits <label> <conns> <ips> <quota> [expires] [--no-restart]"; return 1; }
                     secret_set_limits "$label" "$sl_conns" "$sl_ips" "$sl_quota" "$sl_exp" "$_no_restart"
                     ;;
                 reenable)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret reenable <label>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret reenable <label>"; return 1; }
                     secret_reenable "$1"
                     ;;
                 reset-traffic)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret reset-traffic <label|all>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret reset-traffic <label|all>"; return 1; }
                     secret_reset_traffic "$1"
                     ;;
                 note)
                     local label="$1"; shift 2>/dev/null || true
                     local note_text="$*"
-                    [ -z "$label" ] && { log_error "Usage: mtproxymax secret note <label> [text]"; return 1; }
+                    [ -z "$label" ] && { log_error "Usage: mtproxywidum secret note <label> [text]"; return 1; }
                     secret_edit_note "$label" "$note_text"
                     ;;
                 adtag)
@@ -14041,24 +14152,24 @@ cli_main() {
                     local label="$1"; shift 2>/dev/null || true
                     local at="$1"
                     if [ -z "$label" ]; then
-                        log_error "Usage: mtproxymax secret adtag <label> [32-hex-tag|clear] [--no-restart]"
+                        log_error "Usage: mtproxywidum secret adtag <label> [32-hex-tag|clear] [--no-restart]"
                         return 1
                     fi
                     secret_set_adtag "$label" "$at" "$_no_restart"
                     ;;
                 rename)
                     check_root
-                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxymax secret rename <old> <new>"; return 1; }
+                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxywidum secret rename <old> <new>"; return 1; }
                     secret_rename "$1" "$2"
                     ;;
                 clone)
                     check_root
-                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxymax secret clone <source> <new-label>"; return 1; }
+                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxywidum secret clone <source> <new-label>"; return 1; }
                     secret_clone "$1" "$2"
                     ;;
                 bulk-extend)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret bulk-extend <days>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret bulk-extend <days>"; return 1; }
                     secret_bulk_extend "$1"
                     ;;
                 export)
@@ -14066,7 +14177,7 @@ cli_main() {
                     ;;
                 import)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret import <file>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret import <file>"; return 1; }
                     secret_import "$1"
                     ;;
                 purge-disabled)
@@ -14081,7 +14192,7 @@ cli_main() {
                     ;;
                 rename-prefix)
                     check_root
-                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxymax secret rename-prefix <old> <new>"; return 1; }
+                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxywidum secret rename-prefix <old> <new>"; return 1; }
                     secret_rename_prefix "$1" "$2"
                     ;;
                 disable-expired)
@@ -14090,7 +14201,7 @@ cli_main() {
                     ;;
                 extend)
                     check_root
-                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxymax secret extend <label> <days>"; return 1; }
+                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxywidum secret extend <label> <days>"; return 1; }
                     secret_extend "$1" "$2"
                     ;;
                 stats)
@@ -14107,17 +14218,17 @@ cli_main() {
                     secret_generate_links "${1:-txt}" "${2:-}"
                     ;;
                 search)
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret search <query>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret search <query>"; return 1; }
                     secret_search "$1"
                     ;;
                 archive)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret archive <label>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret archive <label>"; return 1; }
                     secret_archive "$1"
                     ;;
                 unarchive)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax secret unarchive <label>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum secret unarchive <label>"; return 1; }
                     secret_unarchive "$1"
                     ;;
                 archives)
@@ -14204,7 +14315,7 @@ cli_main() {
                 echo -e "  ── ${BOLD}Bind Addresses${NC} ──"
                 echo "  IPv4: ${PROXY_BIND_IPV4:-0.0.0.0}"
                 echo "  IPv6: ${PROXY_BIND_IPV6:-::}"
-                echo -e "\n  ${DIM}Usage: mtproxymax bind <ipv4> [ipv6]${NC}"
+                echo -e "\n  ${DIM}Usage: mtproxywidum bind <ipv4> [ipv6]${NC}"
                 return 0
             fi
             check_root
@@ -14373,7 +14484,7 @@ cli_main() {
                 on|enable)   maintenance_on ;;
                 off|disable) maintenance_off ;;
                 status|"")   maintenance_status ;;
-                *) log_error "Usage: mtproxymax maintenance [on|off|status]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum maintenance [on|off|status]"; return 1 ;;
             esac
             ;;
 
@@ -14396,7 +14507,7 @@ cli_main() {
             case "${1:-}" in
                 export) migrate_export "$2" ;;
                 import) migrate_import "$2" ;;
-                *) log_error "Usage: mtproxymax migrate export [file] | import <file>"; return 1 ;;
+                *) log_error "Usage: mtproxywidum migrate export [file] | import <file>"; return 1 ;;
             esac
             ;;
 
@@ -14549,7 +14660,7 @@ cli_main() {
                 list)   template_list ;;
                 delete) template_delete "$1" ;;
                 apply)  template_apply "$@" ;;
-                *) log_error "Usage: mtproxymax template save|list|delete|apply"; return 1 ;;
+                *) log_error "Usage: mtproxywidum template save|list|delete|apply"; return 1 ;;
             esac
             ;;
 
@@ -14565,7 +14676,7 @@ cli_main() {
                 bbr|net|tune-net)      run_bbr "$@" ;;
                 ram|ram-tune)          run_ram_tune "$@" ;;
                 cpu|cpu-tune)          run_cpu_tune "$@" ;;
-                *) log_error "Usage: mtproxymax tune list|get|set|clear|fastpath|bbr|ram|cpu"; return 1 ;;
+                *) log_error "Usage: mtproxywidum tune list|get|set|clear|fastpath|bbr|ram|cpu"; return 1 ;;
             esac
             ;;
 
@@ -14692,6 +14803,10 @@ cli_main() {
 
         qr-sheet)
             run_qr_sheet "$@"
+            ;;
+
+        upload-test|upload-check)
+            run_upload_test "$@"
             ;;
 
         guest|burner)
@@ -14857,7 +14972,7 @@ cli_main() {
                 set)
                     check_root
                     local _field="$1" _val="$2"
-                    [ -z "$_field" ] || [ -z "$_val" ] && { log_error "Usage: mtproxymax tg-urls set <secret|config-v4|config-v6> <url>"; return 1; }
+                    [ -z "$_field" ] || [ -z "$_val" ] && { log_error "Usage: mtproxywidum tg-urls set <secret|config-v4|config-v6> <url>"; return 1; }
                     [[ "$_val" =~ ^https?:// ]] || { log_error "URL must start with http:// or https://"; return 1; }
                     case "$_field" in
                         secret)     PROXY_SECRET_URL="$_val" ;;
@@ -14870,7 +14985,7 @@ cli_main() {
                     if is_proxy_running; then restart_proxy_container; fi
                     ;;
                 *)
-                    log_error "Usage: mtproxymax tg-urls [get|set <field> <url>|clear]"
+                    log_error "Usage: mtproxywidum tg-urls [get|set <field> <url>|clear]"
                     return 1
                     ;;
             esac
@@ -14993,7 +15108,7 @@ cli_main() {
                     echo -e "  ${BOLD}Unknown SNI policy:${NC} ${UNKNOWN_SNI_ACTION}"
                     ;;
                 *)
-                    log_error "Usage: mtproxymax sni-policy [mask|drop]"; return 1
+                    log_error "Usage: mtproxywidum sni-policy [mask|drop]"; return 1
                     ;;
             esac
             ;;
@@ -15066,7 +15181,7 @@ cli_main() {
                 load)   check_root; profile_load "$1" ;;
                 list)   profile_list ;;
                 delete) check_root; profile_delete "$1" ;;
-                *)      log_error "Usage: mtproxymax profile save|load|list|delete <name>"; return 1 ;;
+                *)      log_error "Usage: mtproxywidum profile save|load|list|delete <name>"; return 1 ;;
             esac
             ;;
 
@@ -15104,12 +15219,12 @@ cli_main() {
             case "$subcmd" in
                 add)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax instance add <port> [label]"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum instance add <port> [label]"; return 1; }
                     instance_add "$1" "$2"
                     ;;
                 remove)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax instance remove <port>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum instance remove <port>"; return 1; }
                     instance_remove "$1"
                     ;;
                 list|"")
@@ -15196,7 +15311,7 @@ cli_main() {
                     local _ival="${1:-}"
                     if [ -z "$_ival" ]; then
                         echo -e "  ${BOLD}Report interval:${NC} every ${TELEGRAM_INTERVAL}h"
-                        echo -e "  ${DIM}Usage: mtproxymax telegram interval <hours>${NC}"
+                        echo -e "  ${DIM}Usage: mtproxywidum telegram interval <hours>${NC}"
                         return 0
                     fi
                     if [[ "$_ival" =~ ^[0-9]+$ ]] && [ "$_ival" -ge 1 ] && [ "$_ival" -le 168 ]; then
@@ -15214,7 +15329,7 @@ cli_main() {
                     local _lbl="${*:-}"
                     if [ -z "$_lbl" ]; then
                         echo -e "  ${BOLD}Server label:${NC} ${TELEGRAM_SERVER_LABEL}"
-                        echo -e "  ${DIM}Usage: mtproxymax telegram label <name>${NC}"
+                        echo -e "  ${DIM}Usage: mtproxywidum telegram label <name>${NC}"
                         return 0
                     fi
                     if [[ "$_lbl" =~ ^[a-zA-Z0-9_.\ -]+$ ]] && [ ${#_lbl} -le 32 ]; then
@@ -15243,10 +15358,10 @@ cli_main() {
                             ;;
                         "")
                             echo -e "  ${BOLD}Alerts:${NC} ${TELEGRAM_ALERTS_ENABLED}"
-                            echo -e "  ${DIM}Usage: mtproxymax telegram alerts <on|off>${NC}"
+                            echo -e "  ${DIM}Usage: mtproxywidum telegram alerts <on|off>${NC}"
                             ;;
                         *)
-                            log_error "Usage: mtproxymax telegram alerts <on|off>"
+                            log_error "Usage: mtproxywidum telegram alerts <on|off>"
                             return 1
                             ;;
                     esac
@@ -15255,7 +15370,7 @@ cli_main() {
                     check_root
                     TELEGRAM_ENABLED="false"
                     save_settings
-                    systemctl stop mtproxymax-telegram.service 2>/dev/null || true
+                    systemctl stop mtproxywidum-telegram.service 2>/dev/null || true
                     log_success "Telegram disabled"
                     ;;
                 remove)
@@ -15264,11 +15379,11 @@ cli_main() {
                     TELEGRAM_BOT_TOKEN=""
                     TELEGRAM_CHAT_ID=""
                     save_settings
-                    systemctl stop mtproxymax-telegram.service 2>/dev/null || true
-                    systemctl disable mtproxymax-telegram.service 2>/dev/null || true
+                    systemctl stop mtproxywidum-telegram.service 2>/dev/null || true
+                    systemctl disable mtproxywidum-telegram.service 2>/dev/null || true
                     log_success "Telegram bot removed"
                     ;;
-                *) log_error "Usage: mtproxymax telegram [setup|test|status|interval|label|alerts|disable|remove]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum telegram [setup|test|status|interval|label|alerts|disable|remove]"; return 1 ;;
             esac
             ;;
 
@@ -15294,7 +15409,7 @@ cli_main() {
                     load_settings
                     if [ "${REPLICATION_ROLE}" != "master" ]; then
                         log_error "Only a master can enable replication sync. Current role: ${REPLICATION_ROLE}"
-                        log_info "Run: mtproxymax replication setup"
+                        log_info "Run: mtproxywidum replication setup"
                         return 1
                     fi
                     REPLICATION_ENABLED="true"
@@ -15327,7 +15442,7 @@ cli_main() {
                     ;;
                 *)
                     log_error "Unknown: replication ${1}"
-                    echo "  Usage: mtproxymax replication [setup|status|add|remove|list|enable|disable|sync|test|logs|reset|promote]"
+                    echo "  Usage: mtproxywidum replication [setup|status|add|remove|list|enable|disable|sync|test|logs|reset|promote]"
                     return 1
                     ;;
             esac
@@ -15379,7 +15494,7 @@ cli_main() {
                         log_success "Engine is up to date (v${_current}, ahead of pinned v${_expected})"
                     else
                         log_info "Update available: v${_current} -> v${_expected}"
-                        echo -e "  ${DIM}Run: mtproxymax update${NC}"
+                        echo -e "  ${DIM}Run: mtproxywidum update${NC}"
                     fi
                     ;;
                 rebuild)
@@ -15397,7 +15512,7 @@ cli_main() {
                     log_success "Engine rebuilt"
                     ;;
                 *)
-                    echo -e "  ${BOLD}Usage:${NC} mtproxymax engine <command>"
+                    echo -e "  ${BOLD}Usage:${NC} mtproxywidum engine <command>"
                     echo ""
                     echo -e "  ${DIM}status${NC}     Show current engine version"
                     echo -e "  ${DIM}rebuild${NC}    Force rebuild engine image"
@@ -15419,15 +15534,15 @@ cli_main() {
                     ;;
                 revoke)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax voucher revoke <code>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum voucher revoke <code>"; return 1; }
                     voucher_revoke "$1"
                     ;;
                 redeem)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax voucher redeem <code> [label]"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum voucher redeem <code> [label]"; return 1; }
                     voucher_redeem "$1" "${2:-}"
                     ;;
-                *) log_error "Usage: mtproxymax voucher [create|list|revoke|redeem]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum voucher [create|list|revoke|redeem]"; return 1 ;;
             esac
             ;;
 
@@ -15438,12 +15553,12 @@ cli_main() {
             case "$subcmd" in
                 add)
                     check_root
-                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxymax admin add <tg_chat_id> <role>"; return 1; }
+                    [ -z "$1" ] || [ -z "$2" ] && { log_error "Usage: mtproxywidum admin add <tg_chat_id> <role>"; return 1; }
                     admin_add "$1" "$2"
                     ;;
                 remove|rm)
                     check_root
-                    [ -z "$1" ] && { log_error "Usage: mtproxymax admin remove <tg_chat_id>"; return 1; }
+                    [ -z "$1" ] && { log_error "Usage: mtproxywidum admin remove <tg_chat_id>"; return 1; }
                     admin_remove "$1"
                     ;;
                 list)
@@ -15452,7 +15567,7 @@ cli_main() {
                 checkrole)
                     _check_tg_role "$1"
                     ;;
-                *) log_error "Usage: mtproxymax admin [add|remove|list]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum admin [add|remove|list]"; return 1 ;;
             esac
             ;;
 
@@ -15495,7 +15610,7 @@ cli_main() {
                 status|"")
                     echo -e "  ${BOLD}Status Portal:${NC} $([ "${PORTAL_ENABLED:-false}" = "true" ] && echo "${GREEN}ENABLED${NC}" || echo "${YELLOW}DISABLED${NC}") (Port: ${PORTAL_PORT:-8080})"
                     ;;
-                *) log_error "Usage: mtproxymax portal [enable|disable|port|generate|serve|status]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum portal [enable|disable|port|generate|serve|status]"; return 1 ;;
             esac
             ;;
 
@@ -15524,12 +15639,12 @@ cli_main() {
                     ;;
                 status|"")
                     echo -e "  ${BOLD}Scanner Threat Shield:${NC} $([ "${SCANNER_SHIELD_ENABLED:-false}" = "true" ] && echo "${GREEN}ENABLED${NC}" || echo "${YELLOW}DISABLED${NC}")"
-                    if command -v ipset &>/dev/null && ipset list mtproxymax-scanners &>/dev/null; then
-                        local _cnt; _cnt=$(ipset list mtproxymax-scanners 2>/dev/null | grep -E '^[0-9]' | wc -l || echo 0)
+                    if command -v ipset &>/dev/null && ipset list mtproxywidum-scanners &>/dev/null; then
+                        local _cnt; _cnt=$(ipset list mtproxywidum-scanners 2>/dev/null | grep -E '^[0-9]' | wc -l || echo 0)
                         echo -e "  ${DIM}Blocked scanner IPs/Subnets in ipset:${NC} ${_cnt}"
                     fi
                     ;;
-                *) log_error "Usage: mtproxymax scanner-shield [enable|disable|update|status]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum scanner-shield [enable|disable|update|status]"; return 1 ;;
             esac
             ;;
 
@@ -15550,7 +15665,7 @@ cli_main() {
                 apply) speed_limit_apply ;;
                 clear) speed_limit_clear ;;
                 list|status|"") speed_limit_list ;;
-                *) log_error "Usage: mtproxymax speed-limit [set|remove|apply|clear|list|status]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum speed-limit [set|remove|apply|clear|list|status]"; return 1 ;;
             esac
             ;;
 
@@ -15561,7 +15676,7 @@ cli_main() {
             case "$sub" in
                 status|"") fleet_status ;;
                 collect) fleet_collect_slave_metrics ;;
-                *) log_error "Usage: mtproxymax fleet [status|collect]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum fleet [status|collect]"; return 1 ;;
             esac
             ;;
 
@@ -15573,7 +15688,7 @@ cli_main() {
                 issue) ssl_issue "$@" ;;
                 status|"") ssl_status ;;
                 clear|reset) ssl_clear ;;
-                *) log_error "Usage: mtproxymax ssl [issue|status|clear]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum ssl [issue|status|clear]"; return 1 ;;
             esac
             ;;
 
@@ -15586,12 +15701,12 @@ cli_main() {
                 telegram|rclone|s3|off|disable) backup_cloud_toggle "$sub" "$@" ;;
                 push|offload) backup_cloud_push ;;
                 status|"") backup_cloud_status ;;
-                *) log_error "Usage: mtproxymax backup-cloud [telegram|rclone|push|status|off]"; return 1 ;;
+                *) log_error "Usage: mtproxywidum backup-cloud [telegram|rclone|push|status|off]"; return 1 ;;
             esac
             ;;
 
         version)
-            echo -e "  ${BOLD}MTProxyMax${NC} v${VERSION}"
+            echo -e "  ${BOLD}MTProxyWidum${NC} v${VERSION}"
             echo -e "  ${DIM}Engine: telemt v$(get_telemt_version) (Rust)${NC}"
             echo -e "  ${DIM}SamNet Technologies${NC}"
             ;;
@@ -16139,8 +16254,8 @@ show_scanner_shield_menu() {
         echo ""
         load_settings
         echo -e "  ${BOLD}Status:${NC} $([ "${SCANNER_SHIELD_ENABLED:-false}" = "true" ] && echo "${GREEN}ENABLED${NC}" || echo "${YELLOW}DISABLED${NC}")"
-        if command -v ipset &>/dev/null && ipset list mtproxymax-scanners &>/dev/null; then
-            local _cnt; _cnt=$(ipset list mtproxymax-scanners 2>/dev/null | grep -E '^[0-9]' | wc -l || echo 0)
+        if command -v ipset &>/dev/null && ipset list mtproxywidum-scanners &>/dev/null; then
+            local _cnt; _cnt=$(ipset list mtproxywidum-scanners 2>/dev/null | grep -E '^[0-9]' | wc -l || echo 0)
             echo -e "  ${BOLD}Active Blocked Subnets/IPs:${NC} ${_cnt}"
         fi
         echo ""
@@ -16374,7 +16489,7 @@ show_main_menu() {
         draw_box_line "  ${BRIGHT_CYAN}[0]${NC}  Exit" "$w"
         draw_box_empty "$w"
         draw_box_sep "$w"
-        draw_box_center "${DIM}mtproxymax v${VERSION} | SamNet Technologies${NC}" "$w"
+        draw_box_center "${DIM}mtproxywidum v${VERSION} | SamNet Technologies${NC}" "$w"
         draw_box_bottom "$w"
 
         local choice
@@ -16659,7 +16774,7 @@ show_secrets_menu() {
                 local io_choice; io_choice=$(read_choice "Choice" "0")
                 case "$io_choice" in
                     1)
-                        local exp_file="$(get_export_dir)/mtproxymax-secrets-$(date +%Y%m%d).csv"
+                        local exp_file="$(get_export_dir)/mtproxywidum-secrets-$(date +%Y%m%d).csv"
                         secret_export > "$exp_file"
                         chmod 600 "$exp_file" 2>/dev/null || true
                         log_success "Exported CSV to ${exp_file}"
@@ -16670,7 +16785,7 @@ show_secrets_menu() {
                         [ -n "$imp_file" ] && { secret_import "$imp_file" || true; }
                         ;;
                     3)
-                        local exp_file="$(get_export_dir)/mtproxymax-secrets-$(date +%Y%m%d).json"
+                        local exp_file="$(get_export_dir)/mtproxywidum-secrets-$(date +%Y%m%d).json"
                         secret_export_json > "$exp_file"
                         chmod 600 "$exp_file" 2>/dev/null || true
                         log_success "Exported JSON to ${exp_file}"
@@ -16941,7 +17056,7 @@ show_telegram_menu() {
             4)
                 if [ "$TELEGRAM_ENABLED" = "true" ]; then
                     TELEGRAM_ENABLED="false"
-                    systemctl stop mtproxymax-telegram.service 2>/dev/null || true
+                    systemctl stop mtproxywidum-telegram.service 2>/dev/null || true
                     log_success "Telegram disabled"
                 else
                     if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
@@ -17514,7 +17629,7 @@ show_engine_menu() {
             echo -e "  ${GREEN}${SYM_OK} Engine is up to date (ahead of pinned)${NC}"
         else
             echo -e "  ${YELLOW}Update available: v${_current} -> v${_expected}${NC}"
-            echo -e "  ${DIM}Run: mtproxymax update${NC}"
+            echo -e "  ${DIM}Run: mtproxywidum update${NC}"
         fi
         echo ""
         echo -e "  ${DIM}[1]${NC} Force rebuild engine"
@@ -17691,7 +17806,7 @@ show_info_multisecret() {
     echo -e "  ${BOLD}What are Secrets?${NC}"
     echo -e "  Each secret is a unique key that grants a user access to your"
     echo -e "  proxy. Think of it like giving someone a password to connect."
-    echo -e "  MTProxyMax supports multiple secrets simultaneously."
+    echo -e "  MTProxyWidum supports multiple secrets simultaneously."
     echo ""
     echo -e "  ${BOLD}Use cases:${NC}"
     echo -e "  ${CYAN}${SYM_ARROW}${NC} Give each family member their own secret"
@@ -17700,14 +17815,14 @@ show_info_multisecret() {
     echo -e "  ${CYAN}${SYM_ARROW}${NC} Rotate compromised keys while keeping others active"
     echo ""
     echo -e "  ${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}mtproxymax secret add <label>${NC}      Create a new secret"
-    echo -e "  ${GREEN}mtproxymax secret add-batch <l1> <l2> ...${NC}  Add multiple (single restart)"
-    echo -e "  ${GREEN}mtproxymax secret remove <label>${NC}   Delete a secret"
-    echo -e "  ${GREEN}mtproxymax secret remove-batch <l1> <l2> ...${NC}  Remove multiple (single restart)"
-    echo -e "  ${GREEN}mtproxymax secret rotate <label>${NC}   Replace key, keep label"
-    echo -e "  ${GREEN}mtproxymax secret enable <label>${NC}   Re-enable a disabled secret"
-    echo -e "  ${GREEN}mtproxymax secret disable <label>${NC}  Temporarily disable access"
-    echo -e "  ${GREEN}mtproxymax secret list${NC}             Show all secrets + traffic"
+    echo -e "  ${GREEN}mtproxywidum secret add <label>${NC}      Create a new secret"
+    echo -e "  ${GREEN}mtproxywidum secret add-batch <l1> <l2> ...${NC}  Add multiple (single restart)"
+    echo -e "  ${GREEN}mtproxywidum secret remove <label>${NC}   Delete a secret"
+    echo -e "  ${GREEN}mtproxywidum secret remove-batch <l1> <l2> ...${NC}  Remove multiple (single restart)"
+    echo -e "  ${GREEN}mtproxywidum secret rotate <label>${NC}   Replace key, keep label"
+    echo -e "  ${GREEN}mtproxywidum secret enable <label>${NC}   Re-enable a disabled secret"
+    echo -e "  ${GREEN}mtproxywidum secret disable <label>${NC}  Temporarily disable access"
+    echo -e "  ${GREEN}mtproxywidum secret list${NC}             Show all secrets + traffic"
     echo ""
     echo -e "  ${BOLD}Labels:${NC}"
     echo -e "  Labels are human-readable names (a-z, 0-9, _, -). They appear"
@@ -17732,8 +17847,8 @@ show_info_adtag() {
     echo -e "  4. You'll receive a 32-character hex ad-tag"
     echo ""
     echo -e "  ${BOLD}How to set it:${NC}"
-    echo -e "  ${GREEN}mtproxymax adtag set <hex>${NC}    Set the ad-tag"
-    echo -e "  ${GREEN}mtproxymax adtag remove${NC}       Remove the ad-tag"
+    echo -e "  ${GREEN}mtproxywidum adtag set <hex>${NC}    Set the ad-tag"
+    echo -e "  ${GREEN}mtproxywidum adtag remove${NC}       Remove the ad-tag"
     echo ""
     echo -e "  ${BOLD}How it appears:${NC}"
     echo -e "  Users who connect through your proxy will see the promoted"
@@ -17778,7 +17893,7 @@ show_info_telegram() {
     echo -e "  ${CYAN}${SYM_ARROW}${NC} Auto-recovery — attempts restart and reports result"
     echo -e "  ${CYAN}${SYM_ARROW}${NC} Periodic reports — traffic summaries at your interval"
     echo ""
-    echo -e "  ${BOLD}Setup:${NC} Run ${GREEN}mtproxymax telegram setup${NC}"
+    echo -e "  ${BOLD}Setup:${NC} Run ${GREEN}mtproxywidum telegram setup${NC}"
     echo ""
     press_any_key
 }
@@ -17803,8 +17918,8 @@ show_info_qrcode() {
     echo -e "  ${GREEN}3.${NC} ${BOLD}Web API${NC} — qrserver.com (for Telegram photo messages)"
     echo ""
     echo -e "  ${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}mtproxymax secret qr <label>${NC}   Show QR in terminal"
-    echo -e "  ${GREEN}mtproxymax secret link <label>${NC} Show shareable link"
+    echo -e "  ${GREEN}mtproxywidum secret qr <label>${NC}   Show QR in terminal"
+    echo -e "  ${GREEN}mtproxywidum secret link <label>${NC} Show shareable link"
     echo ""
     echo -e "  ${BOLD}Via Telegram bot:${NC}"
     echo -e "  Send /mp_link to your bot — it replies with both the link"
@@ -17828,9 +17943,9 @@ show_info_geoblock() {
     echo -e "     network level before reaching the proxy"
     echo ""
     echo -e "  ${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}mtproxymax geoblock add <CC>${NC}    Block a country (e.g., CN)"
-    echo -e "  ${GREEN}mtproxymax geoblock remove <CC>${NC} Unblock a country"
-    echo -e "  ${GREEN}mtproxymax geoblock list${NC}        Show blocked countries"
+    echo -e "  ${GREEN}mtproxywidum geoblock add <CC>${NC}    Block a country (e.g., CN)"
+    echo -e "  ${GREEN}mtproxywidum geoblock remove <CC>${NC} Unblock a country"
+    echo -e "  ${GREEN}mtproxywidum geoblock list${NC}        Show blocked countries"
     echo ""
     echo -e "  ${BOLD}Common country codes:${NC}"
     echo -e "  US (United States)  DE (Germany)    NL (Netherlands)"
@@ -17848,20 +17963,20 @@ show_info_autoupdate() {
     draw_header "AUTO-UPDATE"
     echo ""
     echo -e "  ${BOLD}How Auto-Update works:${NC}"
-    echo -e "  MTProxyMax checks GitHub for new releases and can update"
+    echo -e "  MTProxyWidum checks GitHub for new releases and can update"
     echo -e "  itself with a single command."
     echo ""
     echo -e "  ${BOLD}Update process:${NC}"
     echo -e "  1. Query GitHub API for the latest release version"
     echo -e "  2. Compare with your installed version"
     echo -e "  3. If newer, prompt for confirmation"
-    echo -e "  4. Backup current script to ${DIM}/opt/mtproxymax/backups/${NC}"
+    echo -e "  4. Backup current script to ${DIM}/opt/mtproxywidum/backups/${NC}"
     echo -e "  5. Download and validate new version"
     echo -e "  6. Atomic replace (mv, not copy)"
     echo -e "  7. Regenerate Telegram service if active"
     echo ""
     echo -e "  ${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}mtproxymax update${NC}   Check and apply updates"
+    echo -e "  ${GREEN}mtproxywidum update${NC}   Check and apply updates"
     echo ""
     echo -e "  ${BOLD}Safety:${NC}"
     echo -e "  ${GREEN}${SYM_CHECK}${NC} Always backs up before updating"
@@ -17891,11 +18006,11 @@ show_info_health() {
     echo -e "  The Telegram bot service checks every 5 minutes. If the proxy"
     echo -e "  container is down:"
     echo -e "  1. Sends alert: \"Proxy is down! Attempting auto-restart...\""
-    echo -e "  2. Runs ${GREEN}mtproxymax start${NC}"
+    echo -e "  2. Runs ${GREEN}mtproxywidum start${NC}"
     echo -e "  3. Reports success or failure via Telegram"
     echo ""
     echo -e "  ${BOLD}Manual check:${NC}"
-    echo -e "  ${GREEN}mtproxymax health${NC}   Run diagnostic checks"
+    echo -e "  ${GREEN}mtproxywidum health${NC}   Run diagnostic checks"
     echo ""
     echo -e "  ${BOLD}Docker auto-restart:${NC}"
     echo -e "  The container runs with ${DIM}--restart unless-stopped${NC}, so Docker"
@@ -17911,7 +18026,7 @@ show_info_userlimits() {
     echo ""
     echo -e "  ${BOLD}${YELLOW}Per-User Connection & Bandwidth Limits${NC}"
     echo ""
-    echo -e "  MTProxyMax lets you set limits per secret (user), so you can"
+    echo -e "  MTProxyWidum lets you set limits per secret (user), so you can"
     echo -e "  prevent abuse when sharing your proxy with others."
     echo ""
     draw_line 60 '─'
@@ -17945,10 +18060,10 @@ show_info_userlimits() {
     echo -e "  ${GREEN}TUI:${NC}  Main Menu > Secret Management > Set user limits"
     echo ""
     echo -e "  ${GREEN}CLI:${NC}"
-    echo -e "    mtproxymax secret setlimit alice conns 100"
-    echo -e "    mtproxymax secret setlimit alice ips 5"
-    echo -e "    mtproxymax secret setlimit alice quota 10G"
-    echo -e "    mtproxymax secret setlimit alice expires 2026-06-30"
+    echo -e "    mtproxywidum secret setlimit alice conns 100"
+    echo -e "    mtproxywidum secret setlimit alice ips 5"
+    echo -e "    mtproxywidum secret setlimit alice quota 10G"
+    echo -e "    mtproxywidum secret setlimit alice expires 2026-06-30"
     echo ""
     echo -e "  ${GREEN}Telegram:${NC}"
     echo -e "    /mp_setlimit alice 100 5 10G 2026-06-30"
@@ -18093,7 +18208,7 @@ show_info_upstreams() {
     echo ""
     echo -e "  ${BOLD}Testing an upstream:${NC}"
     echo -e "    TUI: Security & Routing > Proxy Chaining > Test"
-    echo -e "    CLI: ${GREEN}mtproxymax upstream test <name>${NC}"
+    echo -e "    CLI: ${GREEN}mtproxywidum upstream test <name>${NC}"
     echo ""
     press_any_key
 }
@@ -18179,7 +18294,7 @@ show_port_forward_guide() {
     echo -e "  on the local network."
     echo ""
     echo -e "  ${BOLD}  Internet --> [Your Public IP:${PROXY_PORT}] --> Router"
-    echo -e "       --> [Your Server LAN IP:${PROXY_PORT}] --> MTProxyMax${NC}"
+    echo -e "       --> [Your Server LAN IP:${PROXY_PORT}] --> MTProxyWidum${NC}"
     echo ""
     draw_line 60 '─'
     echo ""
@@ -18205,7 +18320,7 @@ show_port_forward_guide() {
     echo ""
     echo -e "  ${BOLD}Step 4: Create the forwarding rule${NC}"
     echo -e "  ${DIM}+──────────────────────────────────────────+${NC}"
-    echo -e "  ${DIM}|  Service Name:  ${NC}MTProxyMax"
+    echo -e "  ${DIM}|  Service Name:  ${NC}MTProxyWidum"
     echo -e "  ${DIM}|  External Port: ${NC}${BOLD}${PROXY_PORT}${NC}"
     echo -e "  ${DIM}|  Internal Port: ${NC}${BOLD}${PROXY_PORT}${NC}"
     echo -e "  ${DIM}|  Internal IP:   ${NC}${BOLD}<your server LAN IP>${NC}"
@@ -18319,7 +18434,7 @@ show_about() {
 
         local w=$TERM_WIDTH
         draw_box_top "$w"
-        draw_box_center "${BRIGHT_GREEN}${BOLD}ABOUT MTPROXYMAX${NC}" "$w"
+        draw_box_center "${BRIGHT_GREEN}${BOLD}ABOUT MTPROXYWIDUM${NC}" "$w"
         draw_box_sep "$w"
         draw_box_empty "$w"
         draw_box_line "  ${BOLD}Created by:${NC}  Sam" "$w"
@@ -18368,7 +18483,7 @@ show_about() {
                 if [ "${_SCRIPT_NEEDS_REEXEC:-}" = "true" ]; then
                     log_info "Restarting with updated script..."
                     sleep 1
-                    exec "${INSTALL_DIR}/mtproxymax" menu
+                    exec "${INSTALL_DIR}/mtproxywidum" menu
                 fi
                 press_any_key
                 ;;
@@ -18541,7 +18656,7 @@ show_replication_menu() {
 
         local timer_state="inactive"
         if command -v systemctl &>/dev/null; then
-            timer_state=$(systemctl is-active mtproxymax-sync.timer 2>/dev/null)
+            timer_state=$(systemctl is-active mtproxywidum-sync.timer 2>/dev/null)
             timer_state="${timer_state:-inactive}"
         fi
 
@@ -18643,6 +18758,6 @@ main() {
     cli_main "$@"
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]] && [ "${MTPROXYMAX_SOURCE_ONLY:-false}" != "true" ]; then
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]] && [ "${MTPROXYWIDUM_SOURCE_ONLY:-false}" != "true" ]; then
     main "$@"
 fi

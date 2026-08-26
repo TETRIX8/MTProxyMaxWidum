@@ -12,7 +12,7 @@ INSTALL_DIR="$TEST_TMPDIR/install"
 SETTINGS_FILE="$INSTALL_DIR/settings.conf"
 mkdir -p "$INSTALL_DIR"
 
-MTPROXYMAX_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxymax.sh"
+MTPROXYWIDUM_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxywidum.sh"
 set +e
 trap 'rm -rf "$TEST_TMPDIR"' EXIT
 

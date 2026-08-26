@@ -11,7 +11,7 @@ TEST_TMPDIR=$(mktemp -d)
 INSTALL_DIR="$TEST_TMPDIR/install"
 mkdir -p "$INSTALL_DIR/relay_stats"
 
-MTPROXYMAX_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxymax.sh"
+MTPROXYWIDUM_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxywidum.sh"
 set +e
 trap 'rm -rf "$TEST_TMPDIR"' EXIT
 
@@ -70,7 +70,7 @@ assert_eq "daemon reset command is queued" "user|alice|120|340" "$(cat "$STATS_D
 # Extract and exercise the exact self-contained daemon helper. Its stale
 # in-memory counters must be replaced before save_traffic writes again.
 telegram_generate_service_script
-awk '/^apply_pending_traffic_resets\(\)/,/^}/' "$INSTALL_DIR/mtproxymax-telegram.sh" > "$TEST_TMPDIR/apply-reset.sh"
+awk '/^apply_pending_traffic_resets\(\)/,/^}/' "$INSTALL_DIR/mtproxywidum-telegram.sh" > "$TEST_TMPDIR/apply-reset.sh"
 source "$TEST_TMPDIR/apply-reset.sh"
 _cum_user_in[alice]=1000
 _cum_user_out[alice]=2000

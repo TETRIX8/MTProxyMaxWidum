@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  MTProxyMax — Replication Unit Tests
+#  MTProxyWidum — Replication Unit Tests
 #  Tests Section 14b (save/load/add/remove) and Section 5 REPLICATION_* keys
 #  in save_settings / load_settings round-trip.
 #
@@ -83,7 +83,7 @@ assert_false() {
 contains() { [[ "$1" == *"$2"* ]]; }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MINIMAL STUBS — exact copies of only the code we need from mtproxymax.sh
+# MINIMAL STUBS — exact copies of only the code we need from mtproxywidum.sh
 # so we never need to source the full 8200-line script.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ _cleanup_test_temps() {
 _mktemp() {
     local dir="${1:-${INSTALL_DIR}}"
     local tmp
-    tmp=$(mktemp "${dir}/.mtproxymax.XXXXXX") || return 1
+    tmp=$(mktemp "${dir}/.mtproxywidum.XXXXXX") || return 1
     chmod 600 "$tmp"
     _TEMP_FILES+=("$tmp")
     echo "$tmp"
@@ -130,9 +130,9 @@ save_replication() {
     tmp=$(_mktemp) || { log_error "Cannot create temp file"; return 1; }
 
     {
-        echo "# MTProxyMax Replication Slaves — v${VERSION}"
+        echo "# MTProxyWidum Replication Slaves — v${VERSION}"
         echo "# Format: HOST|PORT|LABEL|ENABLED|LAST_SYNC|STATUS"
-        echo "# DO NOT EDIT MANUALLY — use 'mtproxymax replication' commands"
+        echo "# DO NOT EDIT MANUALLY — use 'mtproxywidum replication' commands"
         local i
         for i in "${!REPL_HOSTS[@]}"; do
             echo "${REPL_HOSTS[$i]}|${REPL_PORTS[$i]}|${REPL_LABELS[$i]}|${REPL_ENABLED[$i]}|${REPL_LAST_SYNC[$i]}|${REPL_STATUS[$i]}"
@@ -267,10 +267,10 @@ REPLICATION_SYNC_INTERVAL=60
 REPLICATION_SSH_PORT=22
 REPLICATION_SSH_USER="root"
 REPLICATION_DELETE_EXTRA="true"
-REPLICATION_SSH_KEY_PATH="/opt/mtproxymax/.ssh/id_ed25519"
-REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,mtproxymax-telegram.sh,mtproxymax-sync.sh"
+REPLICATION_SSH_KEY_PATH="/opt/mtproxywidum/.ssh/id_ed25519"
+REPLICATION_EXCLUDE="relay_stats,backups,connection.log,.ssh,mtproxywidum-telegram.sh,mtproxywidum-sync.sh"
 REPLICATION_RESTART_ON_CHANGE="true"
-REPLICATION_LOG="/var/log/mtproxymax-sync.log"
+REPLICATION_LOG="/var/log/mtproxywidum-sync.log"
 
 # Remaining settings vars required by save_settings heredoc
 PROXY_PORT=443
@@ -295,7 +295,7 @@ TELEGRAM_BOT_TOKEN=""
 TELEGRAM_CHAT_ID=""
 TELEGRAM_INTERVAL=6
 TELEGRAM_ALERTS_ENABLED="true"
-TELEGRAM_SERVER_LABEL="MTProxyMax"
+TELEGRAM_SERVER_LABEL="MTProxyWidum"
 AUTO_UPDATE_ENABLED="true"
 
 # save_settings — exact copy of Section 5 (minus the flock/atomic detail which
@@ -307,9 +307,9 @@ save_settings() {
     tmp=$(_mktemp) || { log_error "Cannot create temp file"; return 1; }
 
     cat > "$tmp" << SETTINGS_EOF
-# MTProxyMax Settings — v${VERSION}
+# MTProxyWidum Settings — v${VERSION}
 # Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-# DO NOT EDIT MANUALLY — use 'mtproxymax' to change settings
+# DO NOT EDIT MANUALLY — use 'mtproxywidum' to change settings
 
 # Proxy Configuration
 PROXY_PORT='${PROXY_PORT}'
@@ -447,10 +447,10 @@ _clear_settings_vars() {
     REPLICATION_SSH_PORT=22
     REPLICATION_SSH_USER="root"
     REPLICATION_DELETE_EXTRA="true"
-    REPLICATION_SSH_KEY_PATH="/opt/mtproxymax/.ssh/id_ed25519"
+    REPLICATION_SSH_KEY_PATH="/opt/mtproxywidum/.ssh/id_ed25519"
     REPLICATION_EXCLUDE="relay_stats,backups"
     REPLICATION_RESTART_ON_CHANGE="true"
-    REPLICATION_LOG="/var/log/mtproxymax-sync.log"
+    REPLICATION_LOG="/var/log/mtproxywidum-sync.log"
 }
 
 # Helper: reset settings vars AND remove settings.conf.
@@ -919,7 +919,7 @@ _reset_replication
 REPL_HOSTS=("10.1.1.1"); REPL_PORTS=("22"); REPL_LABELS=("x")
 REPL_ENABLED=("true"); REPL_LAST_SYNC=("0"); REPL_STATUS=("ok")
 save_replication
-assert_true "5.3  header comment present" grep -q "MTProxyMax Replication Slaves" "$REPLICATION_FILE"
+assert_true "5.3  header comment present" grep -q "MTProxyWidum Replication Slaves" "$REPLICATION_FILE"
 
 # 5.4  replication.conf contains the format comment
 assert_true "5.4  format comment present" grep -q "HOST|PORT|LABEL" "$REPLICATION_FILE"

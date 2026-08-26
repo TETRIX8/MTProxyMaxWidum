@@ -7,7 +7,7 @@ if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
     exit 0
 fi
 
-MTPROXYMAX_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxymax.sh"
+MTPROXYWIDUM_SOURCE_ONLY=true source "$(dirname "${BASH_SOURCE[0]}")/../mtproxywidum.sh"
 set +e
 
 TESTS_RUN=0
